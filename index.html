@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Уроки: тесты и шпаргалки</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f8fc; --card:#ffffff; --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb;
+    --accent:#4f6bed; --accent-soft:#eef1fe; --ok:#16a34a; --ok-soft:#e8f7ee;
+    --bad:#dc2626; --bad-soft:#fdecec; --warn:#d97706; --warn-soft:#fff6e5;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Nunito,system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+  .wrap{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+  h1{font-size:26px;margin:4px 0 6px}
+  .sub{color:var(--muted);margin:0 0 20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 4px 18px rgba(30,41,80,.05)}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .opt{flex:1 1 200px;border:2px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;background:#fff;text-align:left}
+  .opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+  .opt b{display:block;margin-bottom:4px}
+  .opt span{color:var(--muted);font-size:14px}
+  .btn{border:none;border-radius:12px;padding:13px 22px;font:inherit;font-weight:800;cursor:pointer;background:var(--accent);color:#fff;font-size:16px}
+  .btn.ghost{background:var(--accent-soft);color:var(--accent)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .label{font-weight:700;margin:18px 0 8px}
+  /* progress */
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:700}
+  .bar{height:14px;background:#e9edf7;border-radius:99px;overflow:hidden}
+  .bar>div{height:100%;width:0;background:linear-gradient(90deg,#6d83f2,#22c55e);border-radius:99px;transition:width .4s}
+  .stats{display:flex;gap:14px;color:var(--muted);font-size:14px;margin:8px 0 16px;flex-wrap:wrap}
+  .dir{display:inline-block;font-size:13px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+  .q{font-size:30px;font-weight:800;margin:14px 0 4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .hint{color:var(--muted);font-size:14px;min-height:20px}
+  .speak{border:none;background:var(--accent-soft);color:var(--accent);border-radius:10px;width:40px;height:40px;cursor:pointer;font-size:18px}
+  .answers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+  @media(max-width:520px){.answers{grid-template-columns:1fr}.q{font-size:24px}}
+  .ans{border:2px solid var(--line);background:#fff;border-radius:14px;padding:14px;font:inherit;font-size:17px;font-weight:600;text-align:left;cursor:pointer;color:var(--ink);display:flex;gap:10px}
+  .ans:hover:not(:disabled){border-color:var(--accent)}
+  .ans .k{color:var(--muted);font-weight:800}
+  .ans.ok{border-color:var(--ok);background:var(--ok-soft)}
+  .ans.bad{border-color:var(--bad);background:var(--bad-soft)}
+  .ans:disabled{cursor:default}
+  .typebox{display:flex;gap:10px;margin-top:16px}
+  .typebox input{flex:1;font:inherit;font-size:18px;padding:13px 14px;border:2px solid var(--line);border-radius:12px;outline:none}
+  .typebox input:focus{border-color:var(--accent)}
+  .fb{margin-top:16px;padding:14px;border-radius:12px;font-weight:700;display:none}
+  .fb.ok{display:block;background:var(--ok-soft);color:var(--ok)}
+  .fb.bad{display:block;background:var(--bad-soft);color:var(--bad)}
+  .fb small{display:block;font-weight:600;color:var(--ink);margin-top:4px}
+  .next{margin-top:14px;display:none}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:18px}
+  .chip{font-size:13px;padding:6px 8px;border-radius:8px;background:#f1f3f8;color:var(--muted);display:flex;justify-content:space-between;gap:6px}
+  .chip.half{background:var(--warn-soft);color:var(--warn)}
+  .chip.done{background:var(--ok-soft);color:var(--ok)}
+  .chip.weak{background:var(--bad-soft);color:var(--bad)}
+  details summary{cursor:pointer;color:var(--muted);font-weight:700;margin-top:18px}
+  .final{text-align:center}
+  .big{font-size:56px;margin:6px 0}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}
+  .kpi{background:var(--accent-soft);border-radius:12px;padding:12px}
+  .kpi b{display:block;font-size:24px}
+  .kpi span{font-size:13px;color:var(--muted)}
+  table{width:100%;border-collapse:collapse;margin-top:10px;text-align:left;font-size:15px}
+  td,th{padding:8px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-size:13px}
+  .hidden{display:none}
+  .foot{color:var(--muted);font-size:13px;margin-top:14px}
+
+  .tests{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+  .tcard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;cursor:pointer;text-align:left;font:inherit;color:inherit;box-shadow:0 4px 18px rgba(30,41,80,.05);transition:transform .15s,border-color .15s}
+  .tcard:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .tcard .em{font-size:34px}
+  .tcard h3{margin:8px 0 4px;font-size:19px}
+  .tcard p{margin:0;color:var(--muted);font-size:14px}
+  .tcard .meta{margin-top:12px;display:inline-block;font-size:13px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+  .tcard.folder{background:linear-gradient(135deg,#fff,#f3f5ff)}
+  .back{background:none;border:none;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;padding:0;margin-bottom:10px}
+  .crumbs{font-size:14px;color:var(--muted);margin-bottom:6px}
+  .crumbs a{color:var(--accent);text-decoration:none;font-weight:700}
+  /* шпаргалка */
+  .toc{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+  .toc button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer;color:var(--ink)}
+  .toc button:hover{border-color:var(--accent);color:var(--accent)}
+  .topic{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px 22px;margin-bottom:14px;box-shadow:0 4px 18px rgba(30,41,80,.04)}
+  .topic h2{margin:0 0 10px;font-size:21px;display:flex;gap:10px;align-items:center}
+  .topic h2 .num{background:var(--accent);color:#fff;border-radius:10px;min-width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;font-size:16px}
+  .topic p{margin:8px 0;line-height:1.5}
+  .topic ol,.topic ul{margin:8px 0;padding-left:22px;line-height:1.6}
+  .rule{background:var(--accent-soft);border-left:4px solid var(--accent);padding:10px 14px;border-radius:10px;margin:10px 0;font-weight:700}
+  .ex{background:#f7f9fc;border:1px dashed #cdd5e4;padding:10px 14px;border-radius:10px;margin:10px 0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;line-height:1.7;white-space:pre-wrap}
+  .trap{background:var(--warn-soft);border-left:4px solid var(--warn);padding:10px 14px;border-radius:10px;margin:10px 0}
+  .topic table{font-size:15px}
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-size:.9em;line-height:1.05;margin:0 2px}
+  .frac>span:first-child{border-bottom:1.5px solid currentColor;padding:0 2px}
+  .cta{display:flex;justify-content:center;margin:20px 0 6px}
+  .mq{font-size:22px;font-weight:800;margin:14px 0 4px;line-height:1.35}
+  .tag{display:inline-block;font-size:13px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+  .fb .why{display:block;font-weight:600;color:var(--ink);margin-top:6px;line-height:1.5}
+  @media print{.back,.crumbs,.toc,.cta{display:none}.topic{break-inside:avoid;box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <noscript><div class="card" style="border-color:#f5c26b;background:#fff8ea">
+    <b>Страница не запустилась в режиме просмотра.</b><br>
+    Откройте её в браузере (Chrome, Safari, Яндекс Браузер).
+  </div></noscript>
+
+  <!-- ПАПКА -->
+  <section id="browse">
+    <div class="crumbs" id="crumbs"></div>
+    <h1 id="fTitle"></h1>
+    <p class="sub" id="fSub"></p>
+    <div class="tests" id="fList"></div>
+  </section>
+
+  <!-- СЛОВАРНЫЙ ТЕСТ: настройки -->
+  <section id="start" class="hidden">
+    <div class="crumbs" data-crumbs></div>
+    <h1 id="tTitle"></h1>
+    <p class="sub" id="tSub"></p>
+    <div class="card">
+      <div id="setBlock">
+        <div class="label" style="margin-top:0">Какие слова</div>
+        <div class="row" id="setOpts"></div>
+      </div>
+      <div class="label" id="dirLabel">Направление</div>
+      <div class="row" id="dirOpts">
+        <button class="opt sel" data-v="both"><b>Оба направления</b><span>EN → RU и RU → EN</span></button>
+        <button class="opt" data-v="en"><b>Английский → русский</b><span>видишь английское, выбираешь перевод</span></button>
+        <button class="opt" data-v="ru"><b>Русский → английский</b><span>видишь перевод, ищешь английское</span></button>
+      </div>
+      <div class="label">Как отвечать</div>
+      <div class="row" id="modeOpts">
+        <button class="opt sel" data-v="choice"><b>Выбор из 4 вариантов</b><span>проще, быстрее</span></button>
+        <button class="opt" data-v="type"><b>Писать английский самому</b><span>сложнее: RU → EN вводится с клавиатуры</span></button>
+      </div>
+      <div class="label">Правило «выучено»</div>
+      <p style="margin:0;color:var(--muted)">Слово засчитано, если ответил правильно. Если ошибся — слово вернётся через несколько вопросов, и его нужно будет ответить верно <b>2 раза подряд</b>.</p>
+      <div style="margin-top:20px"><button class="btn" id="go">Начать</button></div>
+    </div>
+  </section>
+
+  <!-- СЛОВАРНЫЙ ТЕСТ: вопросы -->
+  <section id="quiz" class="hidden">
+    <button class="back" data-up>← Выйти из теста</button>
+    <div class="top"><span>Выучено</span><span id="pct">0%</span></div>
+    <div class="bar"><div id="barFill"></div></div>
+    <div class="stats">
+      <span>✅ <b id="sMast">0</b> из <b id="sTotal">0</b> карточек</span>
+      <span>Ответов: <b id="sAns">0</b></span>
+      <span>Ошибок: <b id="sErr">0</b></span>
+    </div>
+    <div class="card">
+      <span class="dir" id="dirTag"></span>
+      <div class="q"><span id="qText"></span><button class="speak hidden" id="qSpeak" title="Произнести">🔊</button></div>
+      <div class="hint" id="qHint"></div>
+      <div class="answers" id="answers"></div>
+      <form class="typebox hidden" id="typeForm" autocomplete="off">
+        <input id="typeInput" placeholder="Напиши по-английски…" spellcheck="false" autocapitalize="off">
+        <button class="btn" type="submit">Ответить</button>
+      </form>
+      <div class="fb" id="fb"></div>
+      <button class="btn next" id="nextBtn">Дальше →</button>
+    </div>
+    <div class="foot">Подсказка: клавиши 1–4 выбирают вариант, Enter — дальше.</div>
+    <details>
+      <summary>Прогресс по словам</summary>
+      <div class="grid" id="wordGrid"></div>
+    </details>
+  </section>
+
+  <!-- СЛОВАРНЫЙ ТЕСТ: итог -->
+  <section id="final" class="hidden">
+    <div class="card final">
+      <div class="big">🏆</div>
+      <h1>100% — все слова выучены!</h1>
+      <div class="kpis">
+        <div class="kpi"><b id="fTime">—</b><span>время</span></div>
+        <div class="kpi"><b id="fAns">—</b><span>всего ответов</span></div>
+        <div class="kpi"><b id="fFirst">—</b><span>верно с первого раза</span></div>
+      </div>
+      <div id="hardBlock">
+        <h3 style="text-align:left;margin-bottom:0">Слова, в которых были ошибки</h3>
+        <table><thead><tr><th>Английский</th><th>Перевод</th><th>Ошибок</th></tr></thead><tbody id="hardBody"></tbody></table>
+      </div>
+      <div class="row" style="justify-content:center;margin-top:20px">
+        <button class="btn" id="again">Пройти ещё раз</button>
+        <button class="btn ghost" id="redoHard">Повторить только трудные</button>
+        <button class="btn ghost" data-up>К папке</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ШПАРГАЛКА -->
+  <section id="cheat" class="hidden">
+    <div class="crumbs" data-crumbs></div>
+    <h1 id="cTitle"></h1>
+    <p class="sub" id="cSub"></p>
+    <div class="toc" id="cToc"></div>
+    <div id="cBody"></div>
+    <div class="cta"><button class="btn" id="cGoTest">Проверить себя — пройти тест →</button></div>
+  </section>
+
+  <!-- МАТЕМАТИЧЕСКИЙ ТЕСТ -->
+  <section id="mquiz" class="hidden">
+    <button class="back" data-up>← Выйти из теста</button>
+    <div class="top"><span>Решено верно</span><span id="mPct">0%</span></div>
+    <div class="bar"><div id="mBar"></div></div>
+    <div class="stats">
+      <span>✅ <b id="mDone">0</b> из <b id="mTotal">0</b> задач</span>
+      <span>Ошибок: <b id="mErr">0</b></span>
+    </div>
+    <div class="card">
+      <span class="tag" id="mTopic"></span>
+      <div class="mq" id="mQ"></div>
+      <div class="hint" id="mHint"></div>
+      <div class="answers" id="mAnswers"></div>
+      <form class="typebox hidden" id="mForm" autocomplete="off">
+        <input id="mInput" inputmode="decimal" placeholder="Ответ (число, можно дробь 3/4)">
+        <button class="btn" type="submit">Ответить</button>
+      </form>
+      <div class="fb" id="mFb"></div>
+      <button class="btn next" id="mNext">Дальше →</button>
+    </div>
+    <div class="foot">Если ошибся — задача вернётся позже. Тест закончится, когда все задачи будут решены верно.</div>
+  </section>
+
+  <section id="mfinal" class="hidden">
+    <div class="card final">
+      <div class="big">🏆</div>
+      <h1>Все задачи решены!</h1>
+      <div class="kpis">
+        <div class="kpi"><b id="mfTime">—</b><span>время</span></div>
+        <div class="kpi"><b id="mfFirst">—</b><span>верно с первого раза</span></div>
+        <div class="kpi"><b id="mfErr">—</b><span>ошибок</span></div>
+      </div>
+      <div id="mHardBlock">
+        <h3 style="text-align:left;margin-bottom:0">Темы, которые стоит повторить</h3>
+        <table><thead><tr><th>Тема</th><th>Ошибок</th></tr></thead><tbody id="mHardBody"></tbody></table>
+      </div>
+      <div class="row" style="justify-content:center;margin-top:20px">
+        <button class="btn" id="mAgain">Пройти ещё раз</button>
+        <button class="btn ghost" id="mToCheat">Открыть шпаргалку</button>
+        <button class="btn ghost" data-up>К папке</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* =====================================================================
+   СТРУКТУРА ПАПОК. Чтобы добавить материал — добавь id в children нужной папки
+   и описание в ITEMS.
+   ===================================================================== */
+const TREE = {
+  id:"", title:"Тесты и шпаргалки", sub:"Выбери папку", children:[
+    {id:"sasha", emoji:"🧑", title:"Саша", children:[
+      {id:"sasha-english", emoji:"🇬🇧", title:"Английский", children:["phrasal"]}
+    ]},
+    {id:"polina", emoji:"👧", title:"Полина", children:[
+      {id:"polina-english", emoji:"🇬🇧", title:"Английский", children:["food"]},
+      {id:"polina-math", emoji:"📐", title:"Математика", children:["math6-cheat","math6-test"]}
+    ]}
+  ]
+};
+
+const ITEMS = {
+  food:{type:"vocab", emoji:"🥦", title:"Еда и продукты", desc:"Овощи, фрукты, молочное, мясо, рыба, напитки",
+    words: [
+  {n:3, en:"tomatoes", ru:"помидоры", acc:["tomatoes", "tomato"]},
+  {n:4, en:"cucumber", ru:"огурец", acc:["cucumber", "cucumbers"]},
+  {n:5, en:"pepper", ru:"перец", acc:["pepper", "peppers"]},
+  {n:6, en:"broccoli", ru:"брокколи", acc:["broccoli"], hl:true},
+  {n:7, en:"celery", ru:"сельдерей", acc:["celery"], hl:true},
+  {n:8, en:"onion", ru:"лук", acc:["onion", "onions"]},
+  {n:9, en:"potatoes", ru:"картофель", acc:["potatoes", "potato"]},
+  {n:10, en:"carrot", ru:"морковь", acc:["carrot", "carrots"]},
+  {n:11, en:"cauliflower", ru:"цветная капуста", acc:["cauliflower"], hl:true},
+  {n:12, en:"grapes", ru:"виноград", acc:["grapes", "grape"]},
+  {n:13, en:"cabbage", ru:"капуста", acc:["cabbage"], hl:true},
+  {n:14, en:"beans", ru:"фасоль", acc:["beans", "bean"]},
+  {n:15, en:"cherries", ru:"вишня", acc:["cherries", "cherry"], hl:true},
+  {n:16, en:"strawberry", ru:"клубника", acc:["strawberry", "strawberries"]},
+  {n:17, en:"pear", ru:"груша", acc:["pear", "pears"]},
+  {n:18, en:"yoghurt", ru:"йогурт", acc:["yoghurt", "yogurt"], hl:true},
+  {n:19, en:"cheese", ru:"сыр", acc:["cheese"]},
+  {n:20, en:"butter", ru:"сливочное масло", acc:["butter"]},
+  {n:21, en:"milk", ru:"молоко", acc:["milk"]},
+  {n:22, en:"bread", ru:"хлеб", acc:["bread"]},
+  {n:23, en:"rice", ru:"рис", acc:["rice"]},
+  {n:24, en:"pasta", ru:"паста", acc:["pasta"]},
+  {n:25, en:"cereal", ru:"хлопья", acc:["cereal", "cereals"]},
+  {n:26, en:"egg", ru:"яйцо", acc:["egg", "eggs"]},
+  {n:27, en:"chicken", ru:"курица", acc:["chicken"], hl:true},
+  {n:28, en:"beef", ru:"говядина", acc:["beef"]},
+  {n:29, en:"lamb", ru:"ягнёнок / молодая баранина", acc:["lamb"]},
+  {n:30, en:"salmon", ru:"лосось / сёмга", acc:["salmon"]},
+  {n:31, en:"prawn", ru:"креветка", acc:["prawn", "prawns"], hl:true},
+  {n:32, en:"cod", ru:"треска", acc:["cod"], hl:true},
+  {n:33, en:"trout", ru:"форель", acc:["trout"], hl:true},
+  {n:34, en:"tuna", ru:"тунец", acc:["tuna"]},
+  {n:35, en:"coffee", ru:"кофе", acc:["coffee"]},
+  {n:36, en:"tea", ru:"чай", acc:["tea"]},
+  {n:37, en:"lemonade", ru:"лимонад", acc:["lemonade"]},
+  {n:38, en:"orange juice", ru:"апельсиновый сок", acc:["orange juice"]},
+  {n:39, en:"pineapple", ru:"ананас", acc:["pineapple", "pineapples"]},
+  {n:40, en:"peaches", ru:"персики", acc:["peaches", "peach"]},
+  {n:41, en:"coconut", ru:"кокос", acc:["coconut", "coconuts"], hl:true},
+  {n:42, en:"spring onions", ru:"зелёный лук", acc:["spring onions", "spring onion"]},
+  {n:43, en:"spinach", ru:"шпинат", acc:["spinach"]},
+  {n:44, en:"lettuce", ru:"салат-латук", acc:["lettuce"]},
+  {n:45, en:"garlic", ru:"чеснок", acc:["garlic"]},
+  {n:46, en:"minced beef", ru:"фарш говяжий", acc:["minced beef"], hl:true},
+  {n:47, en:"sausage", ru:"колбаса", acc:["sausage", "sausages"]},
+  {n:48, en:"steak", ru:"стейк", acc:["steak", "steaks"]},
+  {n:49, en:"mussels", ru:"мидии", acc:["mussels", "mussel"], hl:true},
+  {n:50, en:"crab", ru:"краб", acc:["crab", "crabs"]},
+  {n:51, en:"lobster", ru:"лобстер", acc:["lobster", "lobsters"]},
+  {n:52, en:"olive oil", ru:"оливковое масло", acc:["olive oil"]},
+  {n:53, en:"flour", ru:"мука", acc:["flour"]}
+],
+    sets:[
+      {id:"all", label:"Все слова", hint:"51 слово (№3–53)", f:w=>true},
+      {id:"hl",  label:"Выделенные маркером", hint:"13 трудных слов", f:w=>w.hl},
+      {id:"p1",  label:"Часть 1", hint:"№3–19: овощи, фрукты", f:w=>w.n<=19},
+      {id:"p2",  label:"Часть 2", hint:"№20–36: молочное, мясо, рыба", f:w=>w.n>=20&&w.n<=36},
+      {id:"p3",  label:"Часть 3", hint:"№37–53: напитки, фрукты, разное", f:w=>w.n>=37}
+    ]},
+  phrasal:{type:"vocab", emoji:"🔁", title:"Фразовые глаголы и выражения", desc:"do up, get along, back down, carry out и другие",
+    words: [
+  {en:"do up", ru:"застегнуть; отремонтировать", acc:["do up"]},
+  {en:"do smth over", ru:"переделать", acc:["do over","do smth over","do something over","do sth over"]},
+  {en:"drop by/in", ru:"зайти", acc:["drop by","drop in","drop by/in","drop in/by"]},
+  {en:"drop out (of)", ru:"бросить (учёбу)", acc:["drop out","drop out of"]},
+  {en:"get across", ru:"донести (мысль)", acc:["get across"]},
+  {en:"get along (with)", ru:"ладить (с кем-то)", acc:["get along","get along with"]},
+  {en:"get ahead", ru:"преуспеть", acc:["get ahead"]},
+  {en:"back away", ru:"отступить", acc:["back away"], grp:"retreat"},
+  {en:"back down", ru:"сдаться, отступить", acc:["back down"], grp:"retreat"},
+  {en:"back up", ru:"сделать резервную копию", acc:["back up"]},
+  {en:"back sb up", ru:"поддержать", acc:["back sb up","back somebody up","back someone up","back up"]},
+  {en:"back out of", ru:"отказаться, не выполнить", acc:["back out of","back out"]},
+  {en:"call sb back", ru:"перезвонить", acc:["call sb back","call back","call somebody back","call someone back"]},
+  {en:"call off", ru:"отменить", acc:["call off"]},
+  {en:"carry on", ru:"продолжать", acc:["carry on"]},
+  {en:"carry out", ru:"выполнить, провести", acc:["carry out"]},
+  {en:"go to waste", ru:"пропасть впустую", acc:["go to waste"]},
+  {en:"take advantage of", ru:"воспользоваться", acc:["take advantage of"]},
+  {en:"exchange smth for smth", ru:"обменять", acc:["exchange for","exchange smth for smth","exchange something for something","exchange sth for sth","exchange"]},
+  {en:"at eye level", ru:"на уровне глаз", acc:["at eye level"]},
+  {en:"on the market", ru:"в продаже", acc:["on the market"]},
+  {en:"be made of", ru:"сделан из (материал узнаваем)", acc:["be made of","made of"], grp:"made"},
+  {en:"be made from", ru:"сделан из (материал изменён)", acc:["be made from","made from"], grp:"made"}
+]},
+  "math6-cheat":{type:"cheat", emoji:"📒", title:"Шпаргалка: правила 6 класса", desc:"НОД, НОК, НОЗ, дроби, проценты, среднее, скорость — простыми словами", test:"math6-test"},
+  "math6-test":{type:"mquiz", emoji:"✏️", title:"Тест: правила 6 класса", desc:"21 задача по всем темам шпаргалки, с разбором ошибок", cheat:"math6-cheat"}
+};
+
+/* ===================== ШПАРГАЛКА ===================== */
+const F=(a,b)=>`<span class="frac"><span>${a}</span><span>${b}</span></span>`;
+const CHEAT = [
+ {t:"Делитель и кратное", h:`
+  <div class="rule">Делитель числа — это число, на которое оно делится <u>без остатка</u>.<br>Кратное числа — это число, которое делится на него <u>без остатка</u>.</div>
+  <div class="ex">Делители 12: 1, 2, 3, 4, 6, 12
+Кратные 5: 5, 10, 15, 20, 25, …</div>
+  <p>Если 12 : 3 = 4 без остатка, то <b>3 — делитель 12</b>, а <b>12 — кратное 3</b>.</p>
+  <ul>
+   <li>Самый маленький делитель любого числа — <b>1</b>, самый большой — <b>само число</b>.</li>
+   <li>Самое маленькое кратное — <b>само число</b>, а кратных бесконечно много.</li>
+   <li><b>Простое число</b> имеет ровно два делителя: 1 и само себя (2, 3, 5, 7, 11, 13, 17, 19, 23, …). Число 1 — не простое.</li>
+  </ul>`},
+ {t:"Признаки делимости", h:`
+  <p>Помогают понять, делится ли число, <b>не деля его</b>.</p>
+  <table>
+   <thead><tr><th>Делится на</th><th>Если…</th><th>Пример</th></tr></thead>
+   <tbody>
+    <tr><td><b>2</b></td><td>последняя цифра чётная: 0, 2, 4, 6, 8</td><td>34<b>6</b></td></tr>
+    <tr><td><b>5</b></td><td>последняя цифра 0 или 5</td><td>1 23<b>5</b></td></tr>
+    <tr><td><b>10</b></td><td>последняя цифра 0</td><td>78<b>0</b></td></tr>
+    <tr><td><b>3</b></td><td>сумма цифр делится на 3</td><td>471 → 4+7+1 = 12</td></tr>
+    <tr><td><b>9</b></td><td>сумма цифр делится на 9</td><td>5 382 → 5+3+8+2 = 18</td></tr>
+    <tr><td><b>4</b></td><td>две последние цифры — число, делящееся на 4</td><td>1 3<b>24</b> → 24 : 4</td></tr>
+   </tbody>
+  </table>
+  <div class="trap">⚠️ Если число делится на 9, то оно делится и на 3. А вот наоборот — не всегда: 12 делится на 3, но не на 9.</div>`},
+ {t:"Разложение на простые множители", h:`
+  <p>Это нужно для НОД и НОК. Делим число на простые числа (2, 3, 5, 7…), пока не получим 1.</p>
+  <div class="ex">60 | 2
+30 | 2
+15 | 3
+ 5 | 5
+ 1 |
+60 = 2 · 2 · 3 · 5</div>
+  <p>Начинай делить с самого маленького простого — с 2. Когда на 2 больше не делится, переходи к 3, потом к 5 и т. д.</p>`},
+ {t:"НОД — наибольший общий делитель", h:`
+  <div class="rule">НОД — самое большое число, на которое делятся <u>оба</u> числа.</div>
+  <p><b>Способ 1 (для небольших чисел):</b> выпиши делители и найди самый большой общий.</p>
+  <div class="ex">12: 1, 2, 3, 4, <b>6</b>, 12
+18: 1, 2, 3, <b>6</b>, 9, 18
+НОД(12, 18) = 6</div>
+  <p><b>Способ 2:</b> разложи оба числа на простые множители и перемножь <b>общие</b>.</p>
+  <div class="ex">24 = <b>2 · 2</b> · 2 · <b>3</b>
+36 = <b>2 · 2 · 3</b> · 3
+НОД = 2 · 2 · 3 = 12</div>
+  <p>Если НОД = 1, числа называются <b>взаимно простыми</b> (например, 8 и 15).</p>`},
+ {t:"НОК — наименьшее общее кратное", h:`
+  <div class="rule">НОК — самое маленькое число, которое делится на <u>оба</u> числа.</div>
+  <p><b>Способ 1:</b> бери кратные большего числа и проверяй, делятся ли они на меньшее.</p>
+  <div class="ex">НОК(4, 6): кратные 6 → 6 (на 4 не делится), 12 (делится!)
+НОК(4, 6) = 12</div>
+  <p><b>Способ 2:</b> разложи числа. Возьми разложение <b>большего</b> и допиши множители меньшего, которых не хватает.</p>
+  <div class="ex">12 = 2 · 2 · 3
+ 8 = 2 · 2 · 2   → не хватает одной 2
+НОК = 2 · 2 · 3 · 2 = 24</div>
+  <ul>
+   <li>Если большее число делится на меньшее — НОК = большее (НОК(5, 20) = 20).</li>
+   <li>Если числа взаимно простые — НОК = их произведение (НОК(4, 9) = 36).</li>
+  </ul>`},
+ {t:"НОЗ — наименьший общий знаменатель", h:`
+  <div class="rule">НОЗ = НОК знаменателей. Он нужен, чтобы складывать, вычитать и сравнивать дроби с разными знаменателями.</div>
+  <ol>
+   <li>Найди НОК знаменателей — это и есть НОЗ.</li>
+   <li>Дополнительный множитель = НОЗ : знаменатель дроби.</li>
+   <li>Умножь числитель и знаменатель на дополнительный множитель.</li>
+  </ol>
+  <p>Пример: ${F(1,6)} + ${F(3,8)}</p>
+  <div class="ex">НОЗ = НОК(6, 8) = 24
+1/6 → доп. множитель 24 : 6 = 4 → 4/24
+3/8 → доп. множитель 24 : 8 = 3 → 9/24
+4/24 + 9/24 = 13/24</div>`},
+ {t:"Сократимая дробь и сокращение", h:`
+  <div class="rule">Сократить дробь — разделить числитель и знаменатель на одно и то же число (не 0). Значение дроби не меняется.</div>
+  <p>Дробь <b>сократимая</b>, если у числителя и знаменателя есть общий делитель больше 1. Если НОД = 1 — дробь <b>несократимая</b>.</p>
+  <p>Быстрее всего — сразу разделить на НОД:</p>
+  <div class="ex">18/24: НОД(18, 24) = 6
+18 : 6 = 3,  24 : 6 = 4  →  3/4</div>
+  <p>Можно и по шагам: оба чётные → делим на 2 (9/12), оба делятся на 3 → делим на 3 (3/4).</p>
+  <div class="trap">⚠️ Сокращай до конца! 6/8 — это ещё не ответ, ведь 6 и 8 оба делятся на 2.</div>`},
+ {t:"Как умножить число на дробь", h:`
+  <div class="rule">Число умножаем на <u>числитель</u>, знаменатель оставляем. Потом сокращаем.</div>
+  <div class="ex">12 · 3/4 = (12 · 3)/4 = 36/4 = 9</div>
+  <p>Удобнее сократить <b>до</b> умножения: 12 и 4 делятся на 4 → 3 · 3 = 9.</p>
+  <p>Смешанное число сначала переведи в неправильную дробь: 2${F(1,3)} = ${F("2·3+1",3)} = ${F(7,3)}.</p>`},
+ {t:"Дробь (процент) от числа", h:`
+  <div class="rule">Чтобы найти дробь от числа, число <u>делим на знаменатель</u> и <u>умножаем на числитель</u>.</div>
+  <div class="ex">2/5 от 35:  35 : 5 = 7,  7 · 2 = 14</div>
+  <p><b>Процент</b> — это сотая часть: 1% = ${F(1,100)}. Чтобы найти p% от числа: число : 100 · p.</p>
+  <div class="ex">25% от 80:  80 : 100 · 25 = 20</div>
+  <p>Полезно помнить: 50% = ½, 25% = ¼, 75% = ¾, 20% = ⅕, 10% = ⅒.</p>`},
+ {t:"Число по значению его дроби (процентов)", h:`
+  <p>Здесь известна <b>часть</b>, а найти надо <b>целое</b>.</p>
+  <div class="rule">Известное значение <u>делим на числитель</u> и <u>умножаем на знаменатель</u>.</div>
+  <div class="ex">3/7 числа равны 12. Найди число.
+12 : 3 = 4  (это 1/7)
+4 · 7 = 28
+Проверка: 3/7 от 28 = 28 : 7 · 3 = 12 ✓</div>
+  <p>С процентами так же: значение : p · 100.</p>
+  <div class="ex">20% числа равны 15:  15 : 20 · 100 = 75</div>
+  <div class="trap">⚠️ Как не перепутать:<br>«<b>от</b> числа» — ищем часть, ответ <b>меньше</b> числа;<br>«число <b>по</b> его части» — ищем целое, ответ <b>больше</b> части.</div>`},
+ {t:"Среднее арифметическое", h:`
+  <div class="rule">Среднее арифметическое = сумма всех чисел : их количество.</div>
+  <div class="ex">Числа 4, 7, 10:
+(4 + 7 + 10) : 3 = 21 : 3 = 7</div>
+  <p>Проверка здравым смыслом: среднее всегда находится <b>между</b> самым маленьким и самым большим числом.</p>`},
+ {t:"Средняя скорость", h:`
+  <div class="rule">Средняя скорость = <u>весь путь</u> : <u>всё время</u>.</div>
+  <p>Формулы: путь S = v · t, время t = S : v, скорость v = S : t.</p>
+  <div class="ex">2 ч ехал со скоростью 60 км/ч, потом 1 ч — 90 км/ч.
+Путь: 60·2 + 90·1 = 120 + 90 = 210 км
+Время: 2 + 1 = 3 ч
+Средняя скорость: 210 : 3 = 70 км/ч</div>
+  <div class="trap">⚠️ Главная ловушка: средняя скорость — это <b>не</b> среднее арифметическое скоростей!<br>120 км со скоростью 60 км/ч (2 ч) и 120 км со скоростью 40 км/ч (3 ч):<br>240 : 5 = <b>48 км/ч</b>, а не (60 + 40) : 2 = 50.</div>`}
+];
+
+/* ===================== ТЕСТ ПО МАТЕМАТИКЕ =====================
+   type: "c" — выбор, "n" — ввести число. ans: правильный ответ. */
+const MATH = [
+ {topic:"Делитель и кратное", q:"Какое из чисел является делителем числа 24?", type:"c", opts:["5","7","8","9"], ans:"8", why:"24 : 8 = 3 без остатка. А 24 на 5, 7 и 9 нацело не делится."},
+ {topic:"Делитель и кратное", q:"Какое из чисел кратно 6?", type:"c", opts:["16","26","36","46"], ans:"36", why:"36 : 6 = 6 без остатка. Остальные числа на 6 не делятся."},
+ {topic:"Признаки делимости", q:"Какое число делится на 3?", type:"c", opts:["245","512","1 011","703"], ans:"1 011", why:"Сумма цифр 1 + 0 + 1 + 1 = 3 — делится на 3. У 245 сумма 11, у 512 — 8, у 703 — 10."},
+ {topic:"Признаки делимости", q:"Какое число делится на 9?", type:"c", opts:["3 214","4 518","7 006","1 234"], ans:"4 518", why:"4 + 5 + 1 + 8 = 18, а 18 делится на 9."},
+ {topic:"Признаки делимости", q:"Какое число делится и на 2, и на 5?", type:"c", opts:["125","342","470","555"], ans:"470", why:"На 2 и на 5 одновременно делятся числа, которые оканчиваются на 0 (то есть делятся на 10)."},
+ {topic:"НОД", q:"Найди НОД(12, 18).", type:"n", ans:6, why:"Делители 12: 1, 2, 3, 4, 6, 12. Делители 18: 1, 2, 3, 6, 9, 18. Самый большой общий — 6."},
+ {topic:"НОД", q:"Найди НОД(24, 36).", type:"n", ans:12, why:"24 = 2·2·2·3, 36 = 2·2·3·3. Общие множители 2·2·3 = 12."},
+ {topic:"НОК", q:"Найди НОК(4, 6).", type:"n", ans:12, why:"Кратные 6: 6, 12… Число 12 делится и на 4, и на 6."},
+ {topic:"НОК", q:"Найди НОК(8, 12).", type:"n", ans:24, why:"12 = 2·2·3, к нему добавляем недостающую 2 из 8 = 2·2·2: 2·2·3·2 = 24."},
+ {topic:"НОЗ", q:"Найди наименьший общий знаменатель дробей 1/6 и 3/8.", type:"n", ans:24, why:"НОЗ = НОК(6, 8) = 24."},
+ {topic:"Сокращение дробей", q:"Какая из дробей сократимая?", type:"c", opts:["5/7","9/12","4/9","8/15"], ans:"9/12", why:"9 и 12 оба делятся на 3: 9/12 = 3/4. У остальных дробей НОД числителя и знаменателя равен 1."},
+ {topic:"Сокращение дробей", q:"Сократи дробь 18/24 до конца.", type:"c", opts:["9/12","6/8","3/4","2/3"], ans:"3/4", why:"НОД(18, 24) = 6. 18 : 6 = 3, 24 : 6 = 4. 9/12 и 6/8 — равны 3/4, но сокращены не до конца."},
+ {topic:"Умножение числа на дробь", q:"Вычисли: 12 · 3/4", type:"n", ans:9, why:"12 · 3 = 36, 36/4 = 9. Или сразу: 12 : 4 = 3, 3 · 3 = 9."},
+ {topic:"Умножение числа на дробь", q:"Вычисли: 10 · 2/5", type:"n", ans:4, why:"10 : 5 = 2, 2 · 2 = 4."},
+ {topic:"Дробь от числа", q:"Найди 2/5 от 35.", type:"n", ans:14, why:"35 : 5 = 7 (это 1/5), 7 · 2 = 14."},
+ {topic:"Процент от числа", q:"Найди 25% от 80.", type:"n", ans:20, why:"25% = 1/4. 80 : 4 = 20."},
+ {topic:"Число по его дроби", q:"3/7 числа равны 12. Найди это число.", type:"n", ans:28, why:"12 : 3 = 4 (это 1/7 числа), 4 · 7 = 28. Проверка: 3/7 от 28 = 12."},
+ {topic:"Число по его процентам", q:"20% числа равны 15. Найди это число.", type:"n", ans:75, why:"15 : 20 = 0,75 (это 1%), 0,75 · 100 = 75. Или: 20% = 1/5, значит число = 15 · 5 = 75."},
+ {topic:"Среднее арифметическое", q:"Найди среднее арифметическое чисел 5, 8, 9 и 14.", type:"n", ans:9, why:"5 + 8 + 9 + 14 = 36, чисел 4. 36 : 4 = 9."},
+ {topic:"Средняя скорость", q:"Машина ехала 2 ч со скоростью 60 км/ч и 1 ч со скоростью 90 км/ч. Найди среднюю скорость (км/ч).", type:"n", ans:70, why:"Путь 120 + 90 = 210 км, время 3 ч. 210 : 3 = 70 км/ч."},
+ {topic:"Средняя скорость", q:"Велосипедист проехал 120 км со скоростью 60 км/ч, а обратно те же 120 км — со скоростью 40 км/ч. Какая средняя скорость?", type:"c", opts:["50 км/ч","48 км/ч","45 км/ч","100 км/ч"], ans:"48 км/ч", why:"Время: 120 : 60 = 2 ч и 120 : 40 = 3 ч. Весь путь 240 км, всё время 5 ч. 240 : 5 = 48. Ответ 50 — ловушка: так считать нельзя."}
+];
+
+/* ===================== ОБЩЕЕ ===================== */
+const $=id=>document.getElementById(id);
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const VIEWS=["browse","start","quiz","final","cheat","mquiz","mfinal"];
+function show(id){VIEWS.forEach(s=>$(s).classList.toggle("hidden",s!==id)); try{window.scrollTo(0,0);}catch(e){}}
+
+// карта родителей
+const FOLDERS={}, PARENT={};
+(function walk(node,parent){
+  FOLDERS[node.id]=node; if(parent) PARENT[node.id]=parent.id;
+  (node.children||[]).forEach(c=>{ if(typeof c==="string") PARENT[c]=node.id; else walk(c,node); });
+})(TREE,null);
+
+function pathTo(id){ const p=[]; let cur=PARENT[id]; while(cur!==undefined){ p.unshift(FOLDERS[cur]); cur=PARENT[cur]; } return p; }
+function crumbsHtml(id){
+  return pathTo(id).map(f=>`<a href="#${f.id}">${f.id?f.title:"🏠 Главная"}</a>`).join(" › ");
+}
+function go(id){ if(location.hash.replace('#','')===id) route(); else location.hash=id; }
+function goUp(){ go(PARENT[current_id]!==undefined?PARENT[current_id]:""); }
+let current_id="";
+document.querySelectorAll('[data-up]').forEach(b=>b.onclick=goUp);
+
+function countItems(node){ return (node.children||[]).reduce((s,c)=>s+(typeof c==="string"?1:countItems(c)),0); }
+
+function showFolder(f){
+  $('crumbs').innerHTML=f.id?crumbsHtml(f.id):"";
+  $('fTitle').textContent=(f.emoji?f.emoji+" ":"")+f.title;
+  $('fSub').textContent=f.sub||"";
+  $('fList').innerHTML=(f.children||[]).map(c=>{
+    if(typeof c==="string"){ const it=ITEMS[c];
+      const meta=it.type==="vocab"?`${it.words.length} слов`:it.type==="cheat"?"шпаргалка":`${MATH.length} задач`;
+      return `<button class="tcard" data-go="${c}"><div class="em">${it.emoji}</div><h3>${it.title}</h3><p>${it.desc}</p><span class="meta">${meta}</span></button>`;
+    }
+    const n=countItems(c);
+    return `<button class="tcard folder" data-go="${c.id}"><div class="em">📁 ${c.emoji||""}</div><h3>${c.title}</h3><p>${(c.children||[]).filter(x=>typeof x!=="string").map(x=>x.title).join(", ")||"Материалы"}</p><span class="meta">${n} ${n===1?"материал":n<5?"материала":"материалов"}</span></button>`;
+  }).join('');
+  document.querySelectorAll('#fList [data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+  document.title=f.title;
+  show('browse');
+}
+
+function route(){
+  const id=decodeURIComponent(location.hash.replace('#',''));
+  current_id=id;
+  if(FOLDERS[id]) return showFolder(FOLDERS[id]);
+  const it=ITEMS[id];
+  if(!it){ current_id=""; return showFolder(TREE); }
+  document.querySelectorAll('[data-crumbs]').forEach(e=>e.innerHTML=crumbsHtml(id));
+  document.title=it.title;
+  if(it.type==="vocab") openTest(it);
+  else if(it.type==="cheat") openCheat(it);
+  else if(it.type==="mquiz") startMath(it);
+}
+window.addEventListener('hashchange',route);
+
+/* ===================== ШПАРГАЛКА: вывод ===================== */
+function openCheat(it){
+  $('cTitle').textContent=it.emoji+" "+it.title;
+  $('cSub').textContent="Каждая тема: правило, как делать по шагам и пример. Сначала прочитай, потом проверь себя тестом.";
+  $('cToc').innerHTML=CHEAT.map((c,i)=>`<button data-i="${i}">${i+1}. ${c.t}</button>`).join('');
+  $('cBody').innerHTML=CHEAT.map((c,i)=>`<div class="topic" id="topic-${i}"><h2><span class="num">${i+1}</span>${c.t}</h2>${c.h}</div>`).join('');
+  document.querySelectorAll('#cToc button').forEach(b=>b.onclick=()=>{ const el=$('topic-'+b.dataset.i); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); });
+  $('cGoTest').onclick=()=>go(it.test);
+  show('cheat');
+}
+
+/* ===================== ТЕСТ ПО МАТЕМАТИКЕ: движок ===================== */
+let mItem=null, mCards=[], mQueue=[], mCur=null, mAnswered=false, mStats={err:0,start:0};
+function parseNum(s){
+  s=String(s).replace(/\s/g,'').replace(/км\/ч|км|ч|%/gi,'').replace(',', '.');
+  if(/^-?\d+(\.\d+)?\/\d+(\.\d+)?$/.test(s)){ const [a,b]=s.split('/').map(Number); return b?a/b:NaN; }
+  return /^-?\d+(\.\d+)?$/.test(s)?Number(s):NaN;
+}
+function startMath(it){
+  mItem=it;
+  mCards=MATH.map((m,i)=>({i,done:false,errs:0,firstOk:null}));
+  mQueue=shuffle(mCards.slice()); mStats={err:0,start:Date.now()};
+  $('mTotal').textContent=mCards.length;
+  show('mquiz'); mProgress(); mNext();
+}
+function mProgress(){
+  const d=mCards.filter(c=>c.done).length, p=Math.round(d/mCards.length*100);
+  $('mPct').textContent=p+'%'; $('mBar').style.width=p+'%'; $('mDone').textContent=d; $('mErr').textContent=mStats.err;
+}
+function mNext(){
+  mAnswered=false;
+  if(mCards.every(c=>c.done)) return mFinish();
+  mCur=mQueue.shift(); const m=MATH[mCur.i];
+  $('mTopic').textContent=m.topic; $('mQ').textContent=m.q;
+  $('mHint').textContent=mCur.errs?"Эта задача вернулась после ошибки — попробуй ещё раз.":"";
+  $('mFb').className='fb'; $('mFb').innerHTML=''; $('mNext').style.display='none';
+  const isC=m.type==="c";
+  $('mAnswers').classList.toggle('hidden',!isC); $('mForm').classList.toggle('hidden',isC);
+  if(isC){
+    $('mAnswers').innerHTML=shuffle(m.opts.slice()).map((o,k)=>`<button class="ans" data-o="${o}"><span class="k">${k+1}</span><span>${o}</span></button>`).join('');
+    document.querySelectorAll('#mAnswers .ans').forEach(b=>b.onclick=()=>{
+      if(mAnswered) return;
+      document.querySelectorAll('#mAnswers .ans').forEach(x=>{x.disabled=true; if(x.dataset.o===m.ans) x.classList.add('ok');});
+      const ok=b.dataset.o===m.ans; if(!ok) b.classList.add('bad'); mResult(ok);
+    });
+  } else {
+    $('mInput').value=''; $('mInput').disabled=false; setTimeout(()=>$('mInput').focus(),30);
+  }
+}
+$('mForm').onsubmit=e=>{
+  e.preventDefault(); if(mAnswered) return;
+  const raw=$('mInput').value.trim(); if(!raw) return;
+  const v=parseNum(raw);
+  if(isNaN(v)){ $('mHint').textContent="Введи число, например 12 или 3/4."; return; }
+  $('mInput').disabled=true;
+  mResult(Math.abs(v-MATH[mCur.i].ans)<1e-9);
+};
+function mResult(ok){
+  mAnswered=true; const m=MATH[mCur.i];
+  if(mCur.firstOk===null) mCur.firstOk=ok;
+  const right=m.type==="c"?m.ans:m.ans;
+  if(ok){ mCur.done=true; $('mFb').className='fb ok'; $('mFb').innerHTML=`Верно!<span class="why">${m.why}</span>`; }
+  else{
+    mCur.errs++; mStats.err++;
+    mQueue.splice(Math.min(mQueue.length,3+Math.floor(Math.random()*3)),0,mCur);
+    $('mFb').className='fb bad'; $('mFb').innerHTML=`Неверно. Правильный ответ: ${right}<span class="why">${m.why}<br><i>Тема в шпаргалке: «${m.topic}». Задача вернётся позже.</i></span>`;
+  }
+  mProgress(); $('mNext').style.display='inline-block'; $('mNext').focus();
+}
+$('mNext').onclick=()=>mNext();
+function mFinish(){
+  show('mfinal');
+  const sec=Math.round((Date.now()-mStats.start)/1000);
+  $('mfTime').textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
+  $('mfFirst').textContent=Math.round(mCards.filter(c=>c.firstOk).length/mCards.length*100)+'%';
+  $('mfErr').textContent=mStats.err;
+  const by={}; mCards.forEach(c=>{ if(c.errs) by[MATH[c.i].topic]=(by[MATH[c.i].topic]||0)+c.errs; });
+  const rows=Object.entries(by).sort((a,b)=>b[1]-a[1]);
+  $('mHardBlock').classList.toggle('hidden',!rows.length);
+  $('mHardBody').innerHTML=rows.map(([t,e])=>`<tr><td>${t}</td><td>${e}</td></tr>`).join('');
+}
+$('mAgain').onclick=()=>startMath(mItem);
+$('mToCheat').onclick=()=>go(mItem.cheat);
+
+/* ===================== СЛОВАРНЫЕ ТЕСТЫ ===================== */
+let test=null, settings={set:"all",dir:"both",mode:"choice"};
+let cards=[], queue=[], current=null, answered=false, stats={ans:0,err:0,start:0};
+function norm(s){
+  return s.toLowerCase().replace(/ё/g,'е').replace(/[().,!?;:"']/g,' ')
+    .replace(/\b(somebody|someone|something|smth|sth|sb)\b/g,' ').replace(/\s+/g,' ').trim();
+}
+function bindOpts(groupId,key){
+  document.querySelectorAll('#'+groupId+' .opt').forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll('#'+groupId+' .opt').forEach(x=>x.classList.remove('sel'));
+      b.classList.add('sel'); settings[key]=b.dataset.v;
+    };
+  });
+}
+function openTest(t){
+  test=t; settings.set="all";
+  $('tTitle').textContent=t.title;
+  $('tSub').textContent=`${t.words.length} слов · проверка в обе стороны · тест закончится, когда все выбранные слова будут выучены на 100%`;
+  const sets=t.sets||[{id:"all",label:"Все слова",hint:t.words.length+" слов"}];
+  $('setBlock').classList.toggle('hidden',sets.length<2);
+  $('dirLabel').style.marginTop=sets.length<2?'0':'';
+  $('setOpts').innerHTML=sets.map((s,i)=>`<button class="opt ${i?'':'sel'}" data-v="${s.id}"><b>${s.label}</b><span>${s.hint}</span></button>`).join('');
+  bindOpts('setOpts','set');
+  show('start');
+}
+bindOpts('dirOpts','dir'); bindOpts('modeOpts','mode');
+function selected(){
+  const s=(test.sets||[]).find(x=>x.id===settings.set);
+  const f=s&&s.f?s.f:()=>true;
+  return test.words.map((_,i)=>i).filter(i=>f(test.words[i]));
+}
+$('go').onclick=()=>build(selected());
+$('again').onclick=()=>openTest(test);
+$('redoHard').onclick=()=>{ const hard=[...new Set(cards.filter(c=>c.errs>0).map(c=>c.w))]; build(hard.length?hard:selected()); };
+function build(idxs){
+  cards=[];
+  idxs.forEach(i=>{
+    if(settings.dir!=="ru") cards.push({w:i,d:"en",need:1,streak:0,done:false,errs:0,firstOk:null});
+    if(settings.dir!=="en") cards.push({w:i,d:"ru",need:1,streak:0,done:false,errs:0,firstOk:null});
+  });
+  queue=shuffle(cards.slice()); stats={ans:0,err:0,start:Date.now()};
+  $('sTotal').textContent=cards.length;
+  show('quiz'); updateProgress(); next();
+}
+function updateProgress(){
+  const W=test.words, m=cards.filter(c=>c.done).length;
+  const p=cards.length?Math.round(m/cards.length*100):0;
+  $('pct').textContent=p+'%'; $('barFill').style.width=p+'%';
+  $('sMast').textContent=m; $('sAns').textContent=stats.ans; $('sErr').textContent=stats.err;
+  const used=[...new Set(cards.map(c=>c.w))];
+  $('wordGrid').innerHTML=used.map(i=>{
+    const cs=cards.filter(c=>c.w===i), d=cs.filter(c=>c.done).length;
+    const cls=d===cs.length?'done':(cs.some(c=>c.errs>0&&!c.done)?'weak':(d>0?'half':''));
+    return `<div class="chip ${cls}"><span>${W[i].en}</span><span>${Math.round(d/cs.length*100)}%</span></div>`;
+  }).join('');
+}
+function speak(text){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text.replace(/\bsmth\b/g,'something').replace(/\bsb\b/g,'somebody').replace('/',' or '));
+    u.lang='en-GB'; u.rate=.9; speechSynthesis.speak(u);
+  }catch(e){}
+}
+function distractors(card){
+  const W=test.words, w=W[card.w];
+  const pool=W.map((_,i)=>i).filter(i=>i!==card.w && !(w.grp && W[i].grp===w.grp));
+  return shuffle(pool).slice(0,3);
+}
+function next(){
+  answered=false;
+  if(cards.every(c=>c.done)) return finish();
+  current=queue.shift();
+  const W=test.words, w=W[current.w];
+  $('fb').className='fb'; $('fb').innerHTML=''; $('nextBtn').style.display='none';
+  $('qHint').textContent=current.need>1?`Повтор после ошибки: нужно ещё ${current.need-current.streak} верн. подряд`:'';
+  if(current.d==="en"){
+    $('dirTag').textContent='Английский → русский';
+    $('qText').textContent=w.en; $('qSpeak').classList.remove('hidden'); $('qSpeak').onclick=()=>speak(w.en);
+  } else {
+    $('dirTag').textContent='Русский → английский';
+    $('qText').textContent=w.ru; $('qSpeak').classList.add('hidden');
+  }
+  const typing=settings.mode==="type"&&current.d==="ru";
+  $('answers').classList.toggle('hidden',typing); $('typeForm').classList.toggle('hidden',!typing);
+  if(typing){ $('typeInput').value=''; $('typeInput').disabled=false; setTimeout(()=>$('typeInput').focus(),30); }
+  else{
+    const opts=shuffle([current.w,...distractors(current)]);
+    $('answers').innerHTML=opts.map((i,k)=>`<button class="ans" data-w="${i}"><span class="k">${k+1}</span><span>${current.d==="en"?W[i].ru:W[i].en}</span></button>`).join('');
+    document.querySelectorAll('#answers .ans').forEach(b=>b.onclick=()=>choose(+b.dataset.w,b));
+  }
+}
+function choose(wi,btn){
+  if(answered) return;
+  const ok=wi===current.w;
+  document.querySelectorAll('#answers .ans').forEach(b=>{ b.disabled=true; if(+b.dataset.w===current.w) b.classList.add('ok'); });
+  if(!ok) btn.classList.add('bad');
+  result(ok);
+}
+$('typeForm').onsubmit=e=>{
+  e.preventDefault(); if(answered) return;
+  const v=norm($('typeInput').value); if(!v) return;
+  const w=test.words[current.w];
+  $('typeInput').disabled=true;
+  result((w.acc||[w.en]).some(a=>norm(a)===v));
+};
+function result(ok){
+  answered=true; stats.ans++;
+  const w=test.words[current.w];
+  if(current.firstOk===null) current.firstOk=ok;
+  if(ok){
+    current.streak++;
+    if(current.streak>=current.need) current.done=true;
+    else queue.splice(Math.min(queue.length,3+Math.floor(Math.random()*3)),0,current);
+    $('fb').className='fb ok'; $('fb').innerHTML=`Верно! ${w.en} — ${w.ru}${current.done?'':'<small>Ещё один верный ответ — и слово выучено.</small>'}`;
+    if(current.d==="ru") speak(w.en);
+  } else {
+    stats.err++; current.errs++; current.need=2; current.streak=0;
+    queue.splice(Math.min(queue.length,2+Math.floor(Math.random()*3)),0,current);
+    $('fb').className='fb bad'; $('fb').innerHTML=`Неверно. Правильно: ${w.en} — ${w.ru}<small>Слово вернётся через пару вопросов.</small>`;
+    speak(w.en);
+  }
+  updateProgress(); $('nextBtn').style.display='inline-block'; $('nextBtn').focus();
+}
+$('nextBtn').onclick=()=>next();
+function finish(){
+  show('final');
+  const W=test.words, sec=Math.round((Date.now()-stats.start)/1000);
+  $('fTime').textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
+  $('fAns').textContent=stats.ans;
+  $('fFirst').textContent=Math.round(cards.filter(c=>c.firstOk).length/cards.length*100)+'%';
+  const by={}; cards.forEach(c=>{by[c.w]=(by[c.w]||0)+c.errs;});
+  const hard=Object.entries(by).filter(([,e])=>e>0).sort((a,b)=>b[1]-a[1]);
+  $('hardBlock').classList.toggle('hidden',!hard.length); $('redoHard').classList.toggle('hidden',!hard.length);
+  $('hardBody').innerHTML=hard.map(([i,e])=>`<tr><td><b>${W[i].en}</b></td><td>${W[i].ru}</td><td>${e}</td></tr>`).join('');
+}
+
+/* клавиатура: 1–4 и Enter в обоих тестах */
+document.addEventListener('keydown',e=>{
+  const inVocab=!$('quiz').classList.contains('hidden'), inMath=!$('mquiz').classList.contains('hidden');
+  if(!inVocab&&!inMath) return;
+  const isAns=inVocab?answered:mAnswered, box=inVocab?'#answers':'#mAnswers';
+  if(!isAns && /^[1-4]$/.test(e.key) && !document.querySelector(box).classList.contains('hidden')){
+    const b=document.querySelectorAll(box+' .ans')[+e.key-1]; if(b) b.click();
+  } else if(isAns && e.key==='Enter'){ e.preventDefault(); inVocab?next():mNext(); }
+});
+
+route();
+</script>
+</body>
+</html>
