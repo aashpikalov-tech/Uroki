@@ -75,6 +75,13 @@
   .tcard .em{font-size:34px}
   .tcard h3{margin:8px 0 4px;font-size:19px}
   .tcard p{margin:0;color:var(--muted);font-size:14px}
+  .tcard .hist{display:block;margin-top:8px;font-size:13px;font-weight:700;color:var(--ok)}
+  .tcard .hist.none{color:var(--muted);font-weight:600}
+  .histbox{margin-top:18px;text-align:left}
+  .histbox h3{margin:0 0 4px}
+  .histbox .hsum{color:var(--muted);font-size:14px;margin:0 0 6px}
+  .histbox td.best{color:var(--ok);font-weight:800}
+  .histbox .clear{background:none;border:none;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:6px 0}
   .tcard .meta{margin-top:12px;display:inline-block;font-size:13px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
   .tcard.folder{background:linear-gradient(135deg,#fff,#f3f5ff)}
   .back{background:none;border:none;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;padding:0;margin-bottom:10px}
@@ -142,6 +149,7 @@
       <div class="label">Правило «выучено»</div>
       <p style="margin:0;color:var(--muted)">Слово засчитано, если ответил правильно. Если ошибся — слово вернётся через несколько вопросов, и его нужно будет ответить верно <b>2 раза подряд</b>.</p>
       <div style="margin-top:20px"><button class="btn" id="go">Начать</button></div>
+      <div class="histbox" id="tHist"></div>
     </div>
   </section>
 
@@ -193,6 +201,7 @@
         <button class="btn ghost" id="redoHard">Повторить только трудные</button>
         <button class="btn ghost" data-up>К папке</button>
       </div>
+      <div class="histbox" id="fHist"></div>
     </div>
   </section>
 
@@ -219,6 +228,7 @@
       <div class="label">Правило «выучено»</div>
       <p style="margin:0;color:var(--muted)">Вопрос засчитан, если ответил правильно. Если ошибся — вопрос вернётся через несколько других, и на него нужно ответить верно <b>2 раза подряд</b>. Тест закончится только на <b>100%</b>.</p>
       <div style="margin-top:20px"><button class="btn" id="msGo">Начать</button></div>
+      <div class="histbox" id="msHist"></div>
     </div>
   </section>
 
@@ -264,6 +274,7 @@
         <button class="btn ghost" id="mToCheat">Открыть шпаргалку</button>
         <button class="btn ghost" data-up>К папке</button>
       </div>
+      <div class="histbox" id="mfHist"></div>
     </div>
   </section>
 </div>
@@ -906,6 +917,31 @@ let current_id="";
 document.querySelectorAll('[data-up]').forEach(b=>b.onclick=goUp);
 
 function plural(n,f){const a=n%10,b=n%100;return n+" "+(a===1&&b!==11?f[0]:a>=2&&a<=4&&(b<12||b>14)?f[1]:f[2]);}
+/* ===================== ИСТОРИЯ ПРОХОЖДЕНИЙ (хранится в браузере) ===================== */
+const H_KEY='uroki-history-v1';
+function hLoad(){ try{ return JSON.parse(localStorage.getItem(H_KEY)||'{}')||{}; }catch(e){ return {}; } }
+function hAll(id){ return (hLoad()[id]||[]); }
+function hSave(id,rec){ try{ const d=hLoad(); (d[id]=d[id]||[]).push(rec); localStorage.setItem(H_KEY,JSON.stringify(d)); return true; }catch(e){ return false; } }
+function hClear(id){ try{ const d=hLoad(); delete d[id]; localStorage.setItem(H_KEY,JSON.stringify(d)); }catch(e){} }
+function hFmtTime(sec){ return `${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`; }
+function hFmtDate(ts){ const d=new Date(ts); const p=n=>String(n).padStart(2,'0'); return `${p(d.getDate())}.${p(d.getMonth()+1)}.${String(d.getFullYear()).slice(2)} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+function hBadge(id){
+  const a=hAll(id); if(!a.length) return '<span class="hist none">Ещё не пройден</span>';
+  const best=Math.max(...a.map(r=>r.first)), last=a[a.length-1];
+  return `<span class="hist">✅ Пройден ${plural(a.length,["раз","раза","раз"])} · последний ${last.first}% · лучший ${best}%</span>`;
+}
+function hRender(boxId,id,justNow){
+  const box=$(boxId); if(!box) return;
+  const a=hAll(id);
+  if(!a.length){ box.innerHTML='<h3>История прохождений</h3><p class="hsum">Тест ещё ни разу не пройден до конца на этом устройстве.</p>'; return; }
+  const best=Math.max(...a.map(r=>r.first)), avg=Math.round(a.reduce((s,r)=>s+r.first,0)/a.length);
+  const rows=a.map((r,i)=>({r,n:i+1})).reverse().slice(0,15).map(({r,n})=>`<tr${justNow&&n===a.length?' style="background:var(--ok-soft)"':''}><td>${n}</td><td>${hFmtDate(r.ts)}</td><td>${r.label}</td><td class="${r.first===best?'best':''}">${r.first}%</td><td>${r.err}</td><td>${hFmtTime(r.sec)}</td></tr>`).join('');
+  box.innerHTML=`<h3>История прохождений</h3>
+   <p class="hsum">Пройден до 100%: <b>${plural(a.length,["раз","раза","раз"])}</b> · лучший результат <b>${best}%</b> · средний <b>${avg}%</b>${a.length>15?' · показаны последние 15':''}</p>
+   <div style="overflow-x:auto"><table><thead><tr><th>№</th><th>Дата</th><th>Что проверяли</th><th>С первого раза</th><th>Ошибок</th><th>Время</th></tr></thead><tbody>${rows}</tbody></table></div>
+   <button class="clear" data-hclear>Очистить историю этого теста</button>`;
+  box.querySelector('[data-hclear]').onclick=()=>{ const b=box.querySelector('[data-hclear]'); if(b.dataset.ok){ hClear(id); hRender(boxId,id); } else { b.dataset.ok=1; b.textContent='Точно очистить? Нажмите ещё раз'; } };
+}
 function countItems(node){ return (node.children||[]).reduce((s,c)=>s+(typeof c==="string"?1:countItems(c)),0); }
 
 function showFolder(f){
@@ -915,7 +951,7 @@ function showFolder(f){
   $('fList').innerHTML=(f.children||[]).map(c=>{
     if(typeof c==="string"){ const it=ITEMS[c];
       const meta=it.type==="vocab"?`${it.words.length} слов`:it.type==="cheat"?(it.kind||"шпаргалка"):plural((it.build?it.build():it.questions).length,it.forms||["задача","задачи","задач"]);
-      return `<button class="tcard" data-go="${c}"><div class="em">${it.emoji}</div><h3>${it.title}</h3><p>${it.desc}</p><span class="meta">${meta}</span></button>`;
+      return `<button class="tcard" data-go="${c}"><div class="em">${it.emoji}</div><h3>${it.title}</h3><p>${it.desc}</p><span class="meta">${meta}</span>${it.type==="cheat"?"":hBadge(c)}</button>`;
     }
     const n=countItems(c);
     return `<button class="tcard folder" data-go="${c.id}"><div class="em">📁 ${c.emoji||""}</div><h3>${c.title}</h3><p>${(c.children||[]).filter(x=>typeof x!=="string").map(x=>x.title).join(", ")||"Материалы"}</p><span class="meta">${n} ${n===1?"материал":n<5?"материала":"материалов"}</span></button>`;
@@ -957,10 +993,11 @@ function parseNum(s){
   if(/^-?\d+(\.\d+)?\/\d+(\.\d+)?$/.test(s)){ const [a,b]=s.split('/').map(Number); return b?a/b:NaN; }
   return /^-?\d+(\.\d+)?$/.test(s)?Number(s):NaN;
 }
-let mSel={par:"all",kind:"both"};
+let mSel={par:"all",kind:"both"}, mLabel='';
 function startMath(it){
   mItem=it;
   if(it.filters) return openMStart(it);
+  mLabel='Все задачи';
   runMath(it.build?it.build():it.questions);
 }
 function openMStart(it){
@@ -974,7 +1011,8 @@ function openMStart(it){
     document.querySelectorAll('#msKind .opt').forEach(b=>b.onclick=()=>{mSel.kind=b.dataset.v;draw();});
   };
   draw();
-  $('msGo').onclick=()=>runMath(it.build().filter(q=>(mSel.par==="all"||q.par===mSel.par)&&(mSel.kind==="both"||q.kind===mSel.kind)));
+  hRender('msHist',current_id);
+  $('msGo').onclick=()=>{ mLabel=[it.filters.par.find(x=>x[0]===mSel.par)[1],it.filters.kind.find(x=>x[0]===mSel.kind)[1]].join(' · '); runMath(it.build().filter(q=>(mSel.par==="all"||q.par===mSel.par)&&(mSel.kind==="both"||q.kind===mSel.kind))); };
   show('mstart');
 }
 function runMath(questions){
@@ -1040,6 +1078,8 @@ function mFinish(){
   const rows=Object.entries(by).sort((a,b)=>b[1]-a[1]);
   $('mHardBlock').classList.toggle('hidden',!rows.length);
   $('mHardBody').innerHTML=rows.map(([t,e])=>`<tr><td>${t}</td><td>${e}</td></tr>`).join('');
+  hSave(current_id,{ts:Date.now(),label:mLabel||'Все вопросы',total:mCards.length,first:Math.round(mCards.filter(c=>c.firstOk).length/mCards.length*100),err:mStats.err,sec});
+  hRender('mfHist',current_id,true);
 }
 $('mAgain').onclick=()=>startMath(mItem);
 $('mToCheat').onclick=()=>go(mItem.cheat);
@@ -1068,17 +1108,25 @@ function openTest(t){
   $('dirLabel').style.marginTop=sets.length<2?'0':'';
   $('setOpts').innerHTML=sets.map((s,i)=>`<button class="opt ${i?'':'sel'}" data-v="${s.id}"><b>${s.label}</b><span>${s.hint}</span></button>`).join('');
   bindOpts('setOpts','set');
+  hRender('tHist',current_id);
   show('start');
 }
 bindOpts('dirOpts','dir'); bindOpts('modeOpts','mode');
+let runLabel='';
+function vocabLabel(noSet){
+  const s=(test.sets||[]).find(x=>x.id===settings.set);
+  const dir={both:"EN↔RU",en:"EN→RU",ru:"RU→EN"}[settings.dir];
+  const mode=settings.mode==="type"?"ввод":"выбор";
+  return [noSet||!s||!test.sets?null:s.label, dir, mode].filter(Boolean).join(' · ');
+}
 function selected(){
   const s=(test.sets||[]).find(x=>x.id===settings.set);
   const f=s&&s.f?s.f:()=>true;
   return test.words.map((_,i)=>i).filter(i=>f(test.words[i]));
 }
-$('go').onclick=()=>build(selected());
+$('go').onclick=()=>{ runLabel=vocabLabel(); build(selected()); };
 $('again').onclick=()=>openTest(test);
-$('redoHard').onclick=()=>{ const hard=[...new Set(cards.filter(c=>c.errs>0).map(c=>c.w))]; build(hard.length?hard:selected()); };
+$('redoHard').onclick=()=>{ const hard=[...new Set(cards.filter(c=>c.errs>0).map(c=>c.w))]; runLabel=hard.length?'Только трудные слова · '+vocabLabel(true):vocabLabel(); build(hard.length?hard:selected()); };
 function build(idxs){
   cards=[];
   idxs.forEach(i=>{
@@ -1180,6 +1228,8 @@ function finish(){
   const hard=Object.entries(by).filter(([,e])=>e>0).sort((a,b)=>b[1]-a[1]);
   $('hardBlock').classList.toggle('hidden',!hard.length); $('redoHard').classList.toggle('hidden',!hard.length);
   $('hardBody').innerHTML=hard.map(([i,e])=>`<tr><td><b>${W[i].en}</b></td><td>${W[i].ru}</td><td>${e}</td></tr>`).join('');
+  hSave(current_id,{ts:Date.now(),label:runLabel||vocabLabel(),total:cards.length,first:Math.round(cards.filter(c=>c.firstOk).length/cards.length*100),err:stats.err,sec});
+  hRender('fHist',current_id,true);
 }
 
 /* клавиатура: 1–4 и Enter в обоих тестах */
