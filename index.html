@@ -131,7 +131,31 @@
   .lgsim .lamp span{flex:1;font-weight:700;font-size:14px}
   .lgsim .lamp b{font-size:18px}
   .lgsim .lgnote{margin-top:10px;color:var(--muted)}
-  @media print{.back,.crumbs,.toc,.cta{display:none}.topic{break-inside:avoid;box-shadow:none}}
+  @media print{.back,.crumbs,.toc,.cta{display:none}.topic{break-inside:avoid;box-shadow:none}#quiz,#mquiz{display:none!important}}
+  /* ===== защита тестов ===== */
+  body.inquiz{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  body.inquiz input{-webkit-user-select:text;user-select:text}
+  .qtimer{display:flex;align-items:center;gap:10px;margin:10px 0 2px}
+  .qtimer .qtb{flex:1;height:8px;background:#e9edf7;border-radius:99px;overflow:hidden}
+  .qtimer .qtb i{display:block;height:100%;width:100%;background:var(--accent);border-radius:99px;transition:width .25s linear,background .3s}
+  .qtimer span{font-weight:800;font-size:15px;min-width:42px;text-align:right;color:var(--accent)}
+  .qtimer.low .qtb i{background:var(--warn)} .qtimer.low span{color:var(--warn)}
+  .qtimer.crit .qtb i{background:var(--bad)} .qtimer.crit span{color:var(--bad)}
+  .qtimer.off{visibility:hidden}
+  body.guard-away #quiz .card, body.guard-away #mquiz .card{filter:blur(18px);pointer-events:none}
+  #guardOv{position:fixed;inset:0;background:rgba(246,248,252,.92);z-index:50;display:none;align-items:center;justify-content:center;padding:20px}
+  body.guard-away #guardOv.show{display:flex}
+  #guardOv .card{max-width:440px;text-align:center}
+  #guardOv h2{margin:4px 0 8px}
+  #guardOv p{color:var(--muted);margin:0 0 16px;line-height:1.45}
+  #wmark{position:fixed;inset:0;pointer-events:none;z-index:40;display:none;opacity:.07}
+  body.inquiz #wmark{display:block}
+  .guardlog{margin-top:18px;text-align:left;border-radius:14px;padding:14px 16px;background:var(--ok-soft)}
+  .guardlog:empty{display:none}
+  .guardlog.warn{background:var(--warn-soft)}
+  .guardlog h3{margin:0 0 6px}
+  .guardlog p{margin:0 0 4px}
+  .guardlog ol{margin:6px 0 0;padding-left:22px;font-size:14px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -187,9 +211,11 @@
       <span>✅ <b id="sMast">0</b> из <b id="sTotal">0</b> карточек</span>
       <span>Ответов: <b id="sAns">0</b></span>
       <span>Ошибок: <b id="sErr">0</b></span>
+      <span>Уходов со страницы: <b data-leaves>0</b></span>
     </div>
     <div class="card">
       <span class="dir" id="dirTag"></span>
+      <div class="qtimer off" id="vTimer"><div class="qtb"><i></i></div><span></span></div>
       <div class="q"><span id="qText"></span><button class="speak hidden" id="qSpeak" title="Произнести">🔊</button></div>
       <div class="hint" id="qHint"></div>
       <div class="answers" id="answers"></div>
@@ -200,7 +226,7 @@
       <div class="fb" id="fb"></div>
       <button class="btn next" id="nextBtn">Дальше →</button>
     </div>
-    <div class="foot">Подсказка: клавиши 1–4 выбирают вариант, Enter — дальше.</div>
+    <div class="foot">Подсказка: клавиши 1–4 выбирают вариант, Enter — дальше. На каждый вопрос есть время. Если уйти со страницы, вопрос заменится другим, а уход попадёт в итог теста.</div>
     <details>
       <summary>Прогресс по словам</summary>
       <div class="grid" id="wordGrid"></div>
@@ -226,6 +252,7 @@
         <button class="btn ghost" id="redoHard">Повторить только трудные</button>
         <button class="btn ghost" data-up>К папке</button>
       </div>
+      <div class="guardlog" id="fGuard"></div>
       <div class="histbox" id="fHist"></div>
     </div>
   </section>
@@ -265,9 +292,11 @@
     <div class="stats">
       <span>✅ <b id="mDone">0</b> из <b id="mTotal">0</b> заданий</span>
       <span>Ошибок: <b id="mErr">0</b></span>
+      <span>Уходов со страницы: <b data-leaves>0</b></span>
     </div>
     <div class="card">
       <span class="tag" id="mTopic"></span>
+      <div class="qtimer off" id="mTimer"><div class="qtb"><i></i></div><span></span></div>
       <div class="mq" id="mQ"></div>
       <div class="hint" id="mHint"></div>
       <div class="answers" id="mAnswers"></div>
@@ -278,7 +307,7 @@
       <div class="fb" id="mFb"></div>
       <button class="btn next" id="mNext">Дальше →</button>
     </div>
-    <div class="foot">Если ошибся — вопрос вернётся позже. Тест закончится, когда на все вопросы будет дан верный ответ.</div>
+    <div class="foot">Если ошибся — вопрос вернётся позже. Тест закончится, когда на все вопросы будет дан верный ответ. На каждый вопрос есть время. Если уйти со страницы, вопрос заменится другим, а уход попадёт в итог теста.</div>
   </section>
 
   <section id="mfinal" class="hidden">
@@ -299,11 +328,18 @@
         <button class="btn ghost" id="mToCheat">Открыть шпаргалку</button>
         <button class="btn ghost" data-up>К папке</button>
       </div>
+      <div class="guardlog" id="mfGuard"></div>
       <div class="histbox" id="mfHist"></div>
     </div>
   </section>
 </div>
-
+<div id="wmark"></div>
+<div id="guardOv"><div class="card">
+  <div class="big" style="font-size:44px">🙈</div>
+  <h2 id="goTitle">Ты ушёл со страницы теста</h2>
+  <p id="goText">Вопрос заменён другим. Уход записан в итог теста.</p>
+  <button class="btn" id="goBtn">Продолжить</button>
+</div></div>
 <script>
 /* =====================================================================
    СТРУКТУРА ПАПОК. Чтобы добавить материал — добавь id в children нужной папки
@@ -1414,14 +1450,16 @@ const ITEMS = {
   "bio-proto-test":{type:"mquiz", build:bioBuild, forms:["вопрос","вопроса","вопросов"], emoji:"✏️", title:"Тест: Простейшие и Кишечнополостные", desc:"28 вопросов строго по заданию. Засчитывается, только когда на все отвечено верно; после ошибки вопрос надо решить 2 раза подряд", cheat:"bio-proto-notes",
     filters:{par:[["all","Обе темы"],["Простейшие","Простейшие"],["Кишечнополостные","Кишечнополостные"]],
              kind:[["both","Все вопросы"],["s","Характеристика и строение"],["m","Многообразие простейших"]]}},
-  "math6-test":{type:"mquiz", questions:MATH, emoji:"✏️", title:"Тест: правила 6 класса", desc:"21 задача по всем темам шпаргалки, с разбором ошибок", cheat:"math6-cheat"}
+  "math6-test":{type:"mquiz", questions:MATH, tmul:1.5, emoji:"✏️", title:"Тест: правила 6 класса", desc:"21 задача по всем темам шпаргалки, с разбором ошибок", cheat:"math6-cheat"}
 };
 
 /* ===================== ОБЩЕЕ ===================== */
 const $=id=>document.getElementById(id);
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 const VIEWS=["browse","start","quiz","final","cheat","mstart","mquiz","mfinal"];
-function show(id){VIEWS.forEach(s=>$(s).classList.toggle("hidden",s!==id)); try{window.scrollTo(0,0);}catch(e){}}
+function show(id){VIEWS.forEach(s=>$(s).classList.toggle("hidden",s!==id)); try{window.scrollTo(0,0);}catch(e){}
+  const q=id==="quiz"||id==="mquiz"; document.body.classList.toggle('inquiz',q);
+  if(!q){ gStop(); document.body.classList.remove('guard-away'); $('guardOv').classList.remove('show'); G.away=false; G.pending=false; } else gWatermark(); }
 
 // карта родителей
 const FOLDERS={}, PARENT={};
@@ -1440,6 +1478,106 @@ let current_id="";
 document.querySelectorAll('[data-up]').forEach(b=>b.onclick=goUp);
 
 function plural(n,f){const a=n%10,b=n%100;return n+" "+(a===1&&b!==11?f[0]:a>=2&&a<=4&&(b<12||b>14)?f[1]:f[2]);}
+
+/* ===================== ЗАЩИТА ТЕСТОВ =====================
+   1) таймер на каждый вопрос; 2) уход со страницы / клавиши скриншота -> вопрос
+   скрывается и заменяется другим, уход пишется в итог; 3) запрет копирования,
+   выделения, контекстного меню, печати; 4) водяной знак с именем и временем.
+   Лимит времени можно задать вручную: у вопроса поле t:60 (сек),
+   у теста в ITEMS — tmul:1.5 (множитель ко всем вопросам).
+   ========================================================= */
+const G={eng:null,active:false,away:false,pending:false,timer:null,end:0,total:0,leaves:[],tout:0,label:''};
+function gReset(){ gStop(); G.leaves=[]; G.tout=0; G.pending=false; G.away=false; gLeavesUi(); }
+function gLeavesUi(){ document.querySelectorAll('[data-leaves]').forEach(e=>e.textContent=G.leaves.length); }
+function gLearner(){ const p=pathTo(current_id); return p[1]?p[1].title:''; }
+function gWatermark(){
+  const d=new Date(), pd=n=>String(n).padStart(2,'0');
+  const txt=`${gLearner()} · ${pd(d.getDate())}.${pd(d.getMonth()+1)}.${d.getFullYear()} ${pd(d.getHours())}:${pd(d.getMinutes())}`;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="340" height="200"><text x="20" y="120" transform="rotate(-24 170 100)" font-family="Nunito,sans-serif" font-size="22" font-weight="800" fill="#1f2937">${txt}</text></svg>`;
+  $('wmark').style.background=`url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}")`;
+}
+function gText(html){ const d=document.createElement('div'); d.innerHTML=html||''; return (d.textContent||'').replace(/\s+/g,' ').trim(); }
+/* лимит времени (сек) */
+function gLimitVocab(typing){ return typing?25:15; }
+function gLimitM(m,item){
+  if(m.t) return m.t;
+  const q=m.qh||m.q||'', len=gText(q).length+(m.opts?m.opts.join(' ').length:0), pic=/<svg/i.test(q)?20:0;
+  const t=m.type==="c" ? Math.min(60,Math.max(20,Math.round(12+len/10)+pic))
+                        : Math.min(120,Math.max(40,Math.round(30+len/5)+pic));
+  return Math.round(t*((item&&item.tmul)||1));
+}
+function gStart(eng,label,sec){
+  gStop(); G.eng=eng; G.label=label; G.active=true; G.total=sec; G.end=Date.now()+sec*1000;
+  $(eng==='v'?'vTimer':'mTimer').classList.remove('off'); gTick();
+  G.timer=setInterval(gTick,250);
+}
+function gStop(){ G.active=false; if(G.timer){clearInterval(G.timer);G.timer=null;} }
+function gTick(){
+  const el=$(G.eng==='v'?'vTimer':'mTimer'); const left=Math.max(0,(G.end-Date.now())/1000);
+  el.querySelector('i').style.width=(left/G.total*100)+'%';
+  el.querySelector('span').textContent=Math.ceil(left)+' с';
+  el.classList.toggle('low',left<=G.total*0.4&&left>5); el.classList.toggle('crit',left<=5);
+  if(left<=0 && G.active){ gStop(); G.tout++; G.eng==='v'?vTimeout():mTimeout(); }
+}
+function gInQuiz(){ return !$('quiz').classList.contains('hidden')||!$('mquiz').classList.contains('hidden'); }
+function gLeave(kind){
+  if(!gInQuiz()) return;
+  document.body.classList.add('guard-away');
+  if(G.away) return; G.away=true;
+  if(!G.active) return;                       // вопрос уже отвечен — заменять нечего
+  gStop();
+  const d=new Date(), pd=n=>String(n).padStart(2,'0');
+  G.leaves.push({kind,q:G.label,at:`${pd(d.getHours())}:${pd(d.getMinutes())}:${pd(d.getSeconds())}`});
+  gLeavesUi();
+  // вопрос уходит дальше в очередь: «с первого раза» уже не засчитается, потом нужно 2 верных подряд
+  const c=G.eng==='v'?current:mCur, qu=G.eng==='v'?queue:mQueue;
+  if(c.firstOk===null) c.firstOk=false; c.need=2; c.streak=0;
+  qu.splice(Math.min(qu.length,3+Math.floor(Math.random()*3)),0,c);
+  G.pending=true;
+  if(G.eng==='v') answered=true; else mAnswered=true;   // старый вопрос больше не принимает ответ
+}
+function gBack(){
+  if(!G.away) return;
+  if(G.pending){
+    const last=G.leaves[G.leaves.length-1]||{};
+    $('goTitle').textContent=last.kind==='скриншот'?'Похоже на скриншот':'Ты ушёл со страницы теста';
+    $('goText').innerHTML=`Вопрос заменён другим. К старому придётся вернуться позже и ответить верно 2 раза подряд.<br>Уход записан в итог теста. Всего уходов: <b>${G.leaves.length}</b>.`;
+    $('guardOv').classList.add('show');
+  } else { G.away=false; document.body.classList.remove('guard-away'); }
+}
+$('goBtn').onclick=()=>{
+  $('guardOv').classList.remove('show'); document.body.classList.remove('guard-away'); G.away=false;
+  if(G.pending){ G.pending=false; G.eng==='v'?next():mNext(); }
+};
+document.addEventListener('visibilitychange',()=>{ document.hidden?gLeave('ушёл со страницы'):gBack(); });
+window.addEventListener('blur',()=>gLeave('ушёл со страницы'));
+window.addEventListener('focus',()=>{ if(!document.hidden) gBack(); });
+window.addEventListener('pagehide',()=>gLeave('ушёл со страницы'));
+window.addEventListener('beforeprint',()=>gLeave('печать'));
+function gShot(){ gLeave('скриншот'); setTimeout(()=>{ if(document.hasFocus()&&!document.hidden) gBack(); },500); }
+document.addEventListener('keydown',e=>{
+  if(!gInQuiz()) return;
+  const k=e.key||'';
+  if(G.away){ e.preventDefault(); e.stopImmediatePropagation(); if(k==='Enter'&&$('guardOv').classList.contains('show')) $('goBtn').click(); return; }
+  // Mac: Cmd+Shift(+3/4/5); Windows: Win+Shift+S; PrintScreen
+  if(k==='PrintScreen' || (e.metaKey&&e.shiftKey)) { gShot(); }
+  const inInput=e.target&&e.target.tagName==='INPUT';
+  if((e.ctrlKey||e.metaKey) && /^[cpsu]$/i.test(k) && !(inInput&&/^c$/i.test(k))) e.preventDefault();
+  if((e.ctrlKey||e.metaKey) && /^a$/i.test(k) && !inInput) e.preventDefault();
+},true);
+document.addEventListener('keyup',e=>{
+  if(gInQuiz() && e.key==='PrintScreen'){ try{navigator.clipboard.writeText('');}catch(_){} gShot(); }
+},true);
+['copy','cut','contextmenu','dragstart'].forEach(ev=>document.addEventListener(ev,e=>{ if(gInQuiz()) e.preventDefault(); }));
+document.addEventListener('selectstart',e=>{ if(gInQuiz()&&!(e.target&&e.target.tagName==='INPUT')) e.preventDefault(); });
+function gRender(boxId){
+  const box=$(boxId), n=G.leaves.length;
+  box.className='guardlog'+(n||G.tout?' warn':'');
+  const list=n?`<ol>${G.leaves.map(l=>`<li>${l.at} — ${l.kind}: «${l.q.length>90?l.q.slice(0,90)+'…':l.q}»</li>`).join('')}</ol>`:'';
+  box.innerHTML=`<h3>${n?'⚠️':'✅'} Контроль честности</h3>
+    <p>Уходов со страницы / скриншотов: <b>${n}</b>${n?'':' — тест пройден без отвлечений'}</p>
+    <p>Время на ответ истекло: <b>${G.tout}</b></p>${list}`;
+}
 /* ===================== ИСТОРИЯ ПРОХОЖДЕНИЙ (хранится в браузере) ===================== */
 const H_KEY='uroki-history-v1';
 function hLoad(){ try{ return JSON.parse(localStorage.getItem(H_KEY)||'{}')||{}; }catch(e){ return {}; } }
@@ -1458,10 +1596,10 @@ function hRender(boxId,id,justNow){
   const a=hAll(id);
   if(!a.length){ box.innerHTML='<h3>История прохождений</h3><p class="hsum">Тест ещё ни разу не пройден до конца на этом устройстве.</p>'; return; }
   const best=Math.max(...a.map(r=>r.first)), avg=Math.round(a.reduce((s,r)=>s+r.first,0)/a.length);
-  const rows=a.map((r,i)=>({r,n:i+1})).reverse().slice(0,15).map(({r,n})=>`<tr${justNow&&n===a.length?' style="background:var(--ok-soft)"':''}><td>${n}</td><td>${hFmtDate(r.ts)}</td><td>${r.label}</td><td class="${r.first===best?'best':''}">${r.first}%</td><td>${r.err}</td><td>${hFmtTime(r.sec)}</td></tr>`).join('');
+  const rows=a.map((r,i)=>({r,n:i+1})).reverse().slice(0,15).map(({r,n})=>`<tr${justNow&&n===a.length?' style="background:var(--ok-soft)"':''}><td>${n}</td><td>${hFmtDate(r.ts)}</td><td>${r.label}</td><td class="${r.first===best?'best':''}">${r.first}%</td><td>${r.err}</td><td>${hFmtTime(r.sec)}</td><td${r.leaves?' style="color:var(--bad);font-weight:800"':''}>${r.leaves==null?'—':r.leaves+' / '+r.tout}</td></tr>`).join('');
   box.innerHTML=`<h3>История прохождений</h3>
    <p class="hsum">Пройден до 100%: <b>${plural(a.length,["раз","раза","раз"])}</b> · лучший результат <b>${best}%</b> · средний <b>${avg}%</b>${a.length>15?' · показаны последние 15':''}</p>
-   <div style="overflow-x:auto"><table><thead><tr><th>№</th><th>Дата</th><th>Что проверяли</th><th>С первого раза</th><th>Ошибок</th><th>Время</th></tr></thead><tbody>${rows}</tbody></table></div>
+   <div style="overflow-x:auto"><table><thead><tr><th>№</th><th>Дата</th><th>Что проверяли</th><th>С первого раза</th><th>Ошибок</th><th>Время</th><th>Уходы / ⏱</th></tr></thead><tbody>${rows}</tbody></table></div>
    <button class="clear" data-hclear>Очистить историю этого теста</button>`;
   box.querySelector('[data-hclear]').onclick=()=>{ const b=box.querySelector('[data-hclear]'); if(b.dataset.ok){ hClear(id); hRender(boxId,id); } else { b.dataset.ok=1; b.textContent='Точно очистить? Нажмите ещё раз'; } };
 }
@@ -1541,7 +1679,7 @@ function openMStart(it){
 function runMath(questions){
   Q=questions;
   mCards=Q.map((m,i)=>({i,done:false,errs:0,firstOk:null,need:1,streak:0}));
-  mQueue=shuffle(mCards.slice()); mStats={err:0,start:Date.now()};
+  mQueue=shuffle(mCards.slice()); mStats={err:0,start:Date.now()}; gReset();
   $('mTotal').textContent=mCards.length;
   show('mquiz'); mProgress(); mNext();
 }
@@ -1568,6 +1706,13 @@ function mNext(){
   } else {
     $('mInput').value=''; $('mInput').placeholder=m.ph||'Ответ (число, можно дробь 3/4)'; $('mInput').disabled=false; setTimeout(()=>$('mInput').focus(),30);
   }
+  gStart('m', m.q||gText(m.qh), gLimitM(m,mItem));
+}
+function mTimeout(){
+  if(mAnswered) return; const m=Q[mCur.i];
+  if(m.type==="c") document.querySelectorAll('#mAnswers .ans').forEach(x=>{x.disabled=true; if(x.dataset.o===m.ans) x.classList.add('ok');});
+  else $('mInput').disabled=true;
+  mResult(false); $('mFb').innerHTML=$('mFb').innerHTML.replace(/^Неверно\./,'⏱ Время вышло.');
 }
 $('mForm').onsubmit=e=>{
   e.preventDefault(); if(mAnswered) return;
@@ -1578,7 +1723,7 @@ $('mForm').onsubmit=e=>{
   mResult(Math.abs(v-Q[mCur.i].ans)<1e-9);
 };
 function mResult(ok){
-  mAnswered=true; const m=Q[mCur.i];
+  gStop(); mAnswered=true; const m=Q[mCur.i];
   if(mCur.firstOk===null) mCur.firstOk=ok;
   const right=m.type==="c"?m.ans:m.ans;
   if(ok){ mCur.streak++; if(mCur.streak>=mCur.need) mCur.done=true; else mQueue.splice(Math.min(mQueue.length,3+Math.floor(Math.random()*3)),0,mCur);
@@ -1601,7 +1746,8 @@ function mFinish(){
   const rows=Object.entries(by).sort((a,b)=>b[1]-a[1]);
   $('mHardBlock').classList.toggle('hidden',!rows.length);
   $('mHardBody').innerHTML=rows.map(([t,e])=>`<tr><td>${t}</td><td>${e}</td></tr>`).join('');
-  hSave(current_id,{ts:Date.now(),label:mLabel||'Все вопросы',total:mCards.length,first:Math.round(mCards.filter(c=>c.firstOk).length/mCards.length*100),err:mStats.err,sec});
+  hSave(current_id,{ts:Date.now(),label:mLabel||'Все вопросы',total:mCards.length,first:Math.round(mCards.filter(c=>c.firstOk).length/mCards.length*100),err:mStats.err,sec,leaves:G.leaves.length,tout:G.tout});
+  gRender('mfGuard');
   hRender('mfHist',current_id,true);
 }
 $('mAgain').onclick=()=>startMath(mItem);
@@ -1656,7 +1802,7 @@ function build(idxs){
     if(settings.dir!=="ru") cards.push({w:i,d:"en",need:1,streak:0,done:false,errs:0,firstOk:null});
     if(settings.dir!=="en") cards.push({w:i,d:"ru",need:1,streak:0,done:false,errs:0,firstOk:null});
   });
-  queue=shuffle(cards.slice()); stats={ans:0,err:0,start:Date.now()};
+  queue=shuffle(cards.slice()); stats={ans:0,err:0,start:Date.now()}; gReset();
   $('sTotal').textContent=cards.length;
   show('quiz'); updateProgress(); next();
 }
@@ -1707,6 +1853,13 @@ function next(){
     $('answers').innerHTML=opts.map((i,k)=>`<button class="ans" data-w="${i}"><span class="k">${k+1}</span><span>${current.d==="en"?W[i].ru:W[i].en}</span></button>`).join('');
     document.querySelectorAll('#answers .ans').forEach(b=>b.onclick=()=>choose(+b.dataset.w,b));
   }
+  gStart('v', current.d==="en"?w.en:w.ru, gLimitVocab(typing));
+}
+function vTimeout(){
+  if(answered) return;
+  document.querySelectorAll('#answers .ans').forEach(b=>{ b.disabled=true; if(+b.dataset.w===current.w) b.classList.add('ok'); });
+  $('typeInput').disabled=true;
+  result(false); $('fb').innerHTML=$('fb').innerHTML.replace(/^Неверно\./,'⏱ Время вышло.');
 }
 function choose(wi,btn){
   if(answered) return;
@@ -1723,7 +1876,7 @@ $('typeForm').onsubmit=e=>{
   result((w.acc||[w.en]).some(a=>norm(a)===v));
 };
 function result(ok){
-  answered=true; stats.ans++;
+  gStop(); answered=true; stats.ans++;
   const w=test.words[current.w];
   if(current.firstOk===null) current.firstOk=ok;
   if(ok){
@@ -1751,7 +1904,8 @@ function finish(){
   const hard=Object.entries(by).filter(([,e])=>e>0).sort((a,b)=>b[1]-a[1]);
   $('hardBlock').classList.toggle('hidden',!hard.length); $('redoHard').classList.toggle('hidden',!hard.length);
   $('hardBody').innerHTML=hard.map(([i,e])=>`<tr><td><b>${W[i].en}</b></td><td>${W[i].ru}</td><td>${e}</td></tr>`).join('');
-  hSave(current_id,{ts:Date.now(),label:runLabel||vocabLabel(),total:cards.length,first:Math.round(cards.filter(c=>c.firstOk).length/cards.length*100),err:stats.err,sec});
+  hSave(current_id,{ts:Date.now(),label:runLabel||vocabLabel(),total:cards.length,first:Math.round(cards.filter(c=>c.firstOk).length/cards.length*100),err:stats.err,sec,leaves:G.leaves.length,tout:G.tout});
+  gRender('fGuard');
   hRender('fHist',current_id,true);
 }
 
