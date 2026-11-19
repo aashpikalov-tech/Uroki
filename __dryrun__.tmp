@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Уроки: тесты и шпаргалки</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f8fc; --card:#ffffff; --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb;
+    --accent:#4f6bed; --accent-soft:#eef1fe; --ok:#16a34a; --ok-soft:#e8f7ee;
+    --bad:#dc2626; --bad-soft:#fdecec; --warn:#d97706; --warn-soft:#fff6e5;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Nunito,system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+  .wrap{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+  h1{font-size:26px;margin:4px 0 6px}
+  .sub{color:var(--muted);margin:0 0 20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 4px 18px rgba(30,41,80,.05)}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .opt{flex:1 1 200px;border:2px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;background:#fff;text-align:left}
+  .opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+  .opt b{display:block;margin-bottom:4px}
+  .opt span{color:var(--muted);font-size:14px}
+  .btn{border:none;border-radius:12px;padding:13px 22px;font:inherit;font-weight:800;cursor:pointer;background:var(--accent);color:#fff;font-size:16px}
+  .btn.ghost{background:var(--accent-soft);color:var(--accent)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .label{font-weight:700;margin:18px 0 8px}
+  /* progress */
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:700}
+  .bar{height:14px;background:#e9edf7;border-radius:99px;overflow:hidden}
+  .bar>div{height:100%;width:0;background:linear-gradient(90deg,#6d83f2,#22c55e);border-radius:99px;transition:width .4s}
+  .stats{display:flex;gap:14px;color:var(--muted);font-size:14px;margin:8px 0 16px;flex-wrap:wrap}
+  .dir{display:inline-block;font-size:13px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+  .q{font-size:30px;font-weight:800;margin:14px 0 4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .hint{color:var(--muted);font-size:14px;min-height:20px}
+  .speak{border:none;background:var(--accent-soft);color:var(--accent);border-radius:10px;width:40px;height:40px;cursor:pointer;font-size:18px}
+  .answers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+  @media(max-width:520px){.answers{grid-template-columns:1fr}.q{font-size:24px}}
+  .ans{border:2px solid var(--line);background:#fff;border-radius:14px;padding:14px;font:inherit;font-size:17px;font-weight:600;text-align:left;cursor:pointer;color:var(--ink);display:flex;gap:10px}
+  .ans:hover:not(:disabled){border-color:var(--accent)}
+  .ans .k{color:var(--muted);font-weight:800}
+  .ans.ok{border-color:var(--ok);background:var(--ok-soft)}
+  .ans.bad{border-color:var(--bad);background:var(--bad-soft)}
+  .ans:disabled{cursor:default}
+  .typebox{display:flex;gap:10px;margin-top:16px}
+  .typebox input{flex:1;font:inherit;font-size:18px;padding:13px 14px;border:2px solid var(--line);border-radius:12px;outline:none}
+  .typebox input:focus{border-color:var(--accent)}
+  .fb{margin-top:16px;padding:14px;border-radius:12px;font-weight:700;display:none}
+  .fb.ok{display:block;background:var(--ok-soft);color:var(--ok)}
+  .fb.bad{display:block;background:var(--bad-soft);color:var(--bad)}
+  .fb small{display:block;font-weight:600;color:var(--ink);margin-top:4px}
+  .next{margin-top:14px;display:none}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:18px}
+  .chip{font-size:13px;padding:6px 8px;border-radius:8px;background:#f1f3f8;color:var(--muted);display:flex;justify-content:space-between;gap:6px}
+  .chip.half{background:var(--warn-soft);color:var(--warn)}
+  .chip.done{background:var(--ok-soft);color:var(--ok)}
+  .chip.weak{background:var(--bad-soft);color:var(--bad)}
+  details summary{cursor:pointer;color:var(--muted);font-weight:700;margin-top:18px}
+  .final{text-align:center}
+  .big{font-size:56px;margin:6px 0}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}
+  .kpi{background:var(--accent-soft);border-radius:12px;padding:12px}
+  .kpi b{display:block;font-size:24px}
+  .kpi span{font-size:13px;color:var(--muted)}
+  table{width:100%;border-collapse:collapse;margin-top:10px;text-align:left;font-size:15px}
+  td,th{padding:8px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-size:13px}
+  .hidden{display:none}
+  .foot{color:var(--muted);font-size:13px;margin-top:14px}
+
+  .tests{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+  .tcard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;cursor:pointer;text-align:left;font:inherit;color:inherit;box-shadow:0 4px 18px rgba(30,41,80,.05);transition:transform .15s,border-color .15s}
+  .tcard:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .tcard .em{font-size:34px}
+  .tcard h3{margin:8px 0 4px;font-size:19px}
+  .tcard p{margin:0;color:var(--muted);font-size:14px}
+  .tcard .hist{display:block;margin-top:8px;font-size:13px;font-weight:700;color:var(--ok)}
+  .tcard .hist.none{color:var(--muted);font-weight:600}
+  .histbox{margin-top:18px;text-align:left}
+  .histbox h3{margin:0 0 4px}
+  .histbox .hsum{color:var(--muted);font-size:14px;margin:0 0 6px}
+  .histbox td.best{color:var(--ok);font-weight:800}
+  .histbox .clear{background:none;border:none;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:6px 0}
+  .tcard .meta{margin-top:12px;display:inline-block;font-size:13px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+  .tcard.folder{background:linear-gradient(135deg,#fff,#f3f5ff)}
+  .back{background:none;border:none;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;padding:0;margin-bottom:10px}
+  .crumbs{font-size:14px;color:var(--muted);margin-bottom:6px}
+  .crumbs a{color:var(--accent);text-decoration:none;font-weight:700}
+  /* шпаргалка */
+  .toc{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+  .toc button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer;color:var(--ink)}
+  .toc button:hover{border-color:var(--accent);color:var(--accent)}
+  .topic{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px 22px;margin-bottom:14px;box-shadow:0 4px 18px rgba(30,41,80,.04)}
+  .topic h2{margin:0 0 10px;font-size:21px;display:flex;gap:10px;align-items:center}
+  .topic h2 .num{background:var(--accent);color:#fff;border-radius:10px;min-width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;font-size:16px}
+  .topic p{margin:8px 0;line-height:1.5}
+  .topic ol,.topic ul{margin:8px 0;padding-left:22px;line-height:1.6}
+  .rule{background:var(--accent-soft);border-left:4px solid var(--accent);padding:10px 14px;border-radius:10px;margin:10px 0;font-weight:700}
+  .ex{background:#f7f9fc;border:1px dashed #cdd5e4;padding:10px 14px;border-radius:10px;margin:10px 0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;line-height:1.7;white-space:pre-wrap}
+  .trap{background:var(--warn-soft);border-left:4px solid var(--warn);padding:10px 14px;border-radius:10px;margin:10px 0}
+  .topic table{font-size:15px}
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-size:.9em;line-height:1.05;margin:0 2px}
+  .frac>span:first-child{border-bottom:1.5px solid currentColor;padding:0 2px}
+  .cta{display:flex;justify-content:center;margin:20px 0 6px}
+  .mq{font-size:22px;font-weight:800;margin:14px 0 4px;line-height:1.35}
+  .tag{display:inline-block;font-size:13px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+  .fb .why{display:block;font-weight:600;color:var(--ink);margin-top:6px;line-height:1.5}
+  /* логические схемы */
+  .lgs{display:block;margin:10px 0}
+  .lgs .g{fill:#fff;stroke:#1f2937;stroke-width:2}
+  .lgs .gi{fill:#fff;stroke:#1f2937;stroke-width:2}
+  .lgs .w{fill:none;stroke:#1f2937;stroke-width:2}
+  .lgs .dot{fill:#1f2937}
+  .lgs .gt{font:800 18px Nunito,sans-serif;text-anchor:middle;fill:#1f2937}
+  .lgs .lbl{font:800 16px Nunito,sans-serif;fill:#1f2937}
+  .lgs .bits{font:700 12px ui-monospace,Menlo,Consolas,monospace;fill:#4f6bed}
+  .mq .lgs{margin:12px 0 0}
+  .topic td .lgs{margin:0}
+  .ov{text-decoration:overline}
+  .tt{width:auto;min-width:260px}
+  .tt th,.tt td{text-align:center;padding:6px 12px}
+  .lgsim{background:#f7f9fc;border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+  .lgsim .sws{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .lgsim .sw{border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px 18px;font:inherit;font-weight:800;font-size:18px;cursor:pointer;color:var(--ink)}
+  .lgsim .sw.on{border-color:var(--accent);background:var(--accent);color:#fff}
+  .lgsim .lamps{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+  .lgsim .lamp{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+  .lgsim .lamp i{width:18px;height:18px;border-radius:50%;background:#d1d5db;flex:none}
+  .lgsim .lamp.on i{background:#facc15;box-shadow:0 0 10px #facc15}
+  .lgsim .lamp span{flex:1;font-weight:700;font-size:14px}
+  .lgsim .lamp b{font-size:18px}
+  .lgsim .lgnote{margin-top:10px;color:var(--muted)}
+  @media print{.back,.crumbs,.toc,.cta{display:none}.topic{break-inside:avoid;box-shadow:none}#quiz,#mquiz{display:none!important}}
+  /* ===== защита тестов ===== */
+  body.inquiz{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  body.inquiz input{-webkit-user-select:text;user-select:text}
+  .qtimer{display:flex;align-items:center;gap:10px;margin:10px 0 2px}
+  .qtimer .qtb{flex:1;height:8px;background:#e9edf7;border-radius:99px;overflow:hidden}
+  .qtimer .qtb i{display:block;height:100%;width:100%;background:var(--accent);border-radius:99px;transition:width .25s linear,background .3s}
+  .qtimer span{font-weight:800;font-size:15px;min-width:42px;text-align:right;color:var(--accent)}
+  .qtimer.low .qtb i{background:var(--warn)} .qtimer.low span{color:var(--warn)}
+  .qtimer.crit .qtb i{background:var(--bad)} .qtimer.crit span{color:var(--bad)}
+  .qtimer.off{visibility:hidden}
+  body.guard-away #quiz .card, body.guard-away #mquiz .card{filter:blur(18px);pointer-events:none}
+  #guardOv{position:fixed;inset:0;background:rgba(246,248,252,.92);z-index:50;display:none;align-items:center;justify-content:center;padding:20px}
+  body.guard-away #guardOv.show{display:flex}
+  #guardOv .card{max-width:440px;text-align:center}
+  #guardOv h2{margin:4px 0 8px}
+  #guardOv p{color:var(--muted);margin:0 0 16px;line-height:1.45}
+  #wmark{position:fixed;inset:0;pointer-events:none;z-index:40;display:none;opacity:.07}
+  body.inquiz #wmark{display:block}
+  .guardlog{margin-top:18px;text-align:left;border-radius:14px;padding:14px 16px;background:var(--ok-soft)}
+  .guardlog:empty{display:none}
+  .guardlog.warn{background:var(--warn-soft)}
+  .guardlog h3{margin:0 0 6px}
+  .guardlog p{margin:0 0 4px}
+  .guardlog ol{margin:6px 0 0;padding-left:22px;font-size:14px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <noscript><div class="card" style="border-color:#f5c26b;background:#fff8ea">
+    <b>Страница не запустилась в режиме просмотра.</b><br>
+    Откройте её в браузере (Chrome, Safari, Яндекс Браузер).
+  </div></noscript>
+
+  <!-- ПАПКА -->
+  <section id="browse">
+    <div class="crumbs" id="crumbs"></div>
+    <h1 id="fTitle"></h1>
+    <p class="sub" id="fSub"></p>
+    <div class="tests" id="fList"></div>
+  </section>
+
+  <!-- СЛОВАРНЫЙ ТЕСТ: настройки -->
+  <section id="start" class="hidden">
+    <div class="crumbs" data-crumbs></div>
+    <h1 id="tTitle"></h1>
+    <p class="sub" id="tSub"></p>
+    <div class="card">
+      <div id="setBlock">
+        <div class="label" style="margin-top:0">Какие слова</div>
+        <div class="row" id="setOpts"></div>
+      </div>
+      <div class="label" id="dirLabel">Направление</div>
+      <div class="row" id="dirOpts">
+        <button class="opt sel" data-v="both"><b>Оба направления</b><span>EN → RU и RU → EN</span></button>
+        <button class="opt" data-v="en"><b>Английский → русский</b><span>видишь английское, выбираешь перевод</span></button>
+        <button class="opt" data-v="ru"><b>Русский → английский</b><span>видишь перевод, ищешь английское</span></button>
+      </div>
+      <div class="label">Как отвечать</div>
+      <div class="row" id="modeOpts">
+        <button class="opt sel" data-v="choice"><b>Выбор из 4 вариантов</b><span>проще, быстрее</span></button>
+        <button class="opt" data-v="type"><b>Писать английский самому</b><span>сложнее: RU → EN вводится с клавиатуры</span></button>
+      </div>
+      <div class="label">Правило «выучено»</div>
+      <p style="margin:0;color:var(--muted)">Слово засчитано, если ответил правильно. Если ошибся — слово вернётся через несколько вопросов, и его нужно будет ответить верно <b>2 раза подряд</b>.</p>
+      <div style="margin-top:20px"><button class="btn" id="go">Начать</button></div>
+      <div class="histbox" id="tHist"></div>
+    </div>
+  </section>
+
+  <!-- СЛОВАРНЫЙ ТЕСТ: вопросы -->
+  <section id="quiz" class="hidden">
+    <button class="back" data-up>← Выйти из теста</button>
+    <div class="top"><span>Выучено</span><span id="pct">0%</span></div>
+    <div class="bar"><div id="barFill"></div></div>
+    <div class="stats">
+      <span>✅ <b id="sMast">0</b> из <b id="sTotal">0</b> карточек</span>
+      <span>Ответов: <b id="sAns">0</b></span>
+      <span>Ошибок: <b id="sErr">0</b></span>
+      <span>Уходов со страницы: <b data-leaves>0</b></span>
+    </div>
+    <div class="card">
+      <span class="dir" id="dirTag"></span>
+      <div class="qtimer off" id="vTimer"><div class="qtb"><i></i></div><span></span></div>
+      <div class="q"><span id="qText"></span><button class="speak hidden" id="qSpeak" title="Произнести">🔊</button></div>
+      <div class="hint" id="qHint"></div>
+      <div class="answers" id="answers"></div>
+      <form class="typebox hidden" id="typeForm" autocomplete="off">
+        <input id="typeInput" placeholder="Напиши по-английски…" spellcheck="false" autocapitalize="off">
+        <button class="btn" type="submit">Ответить</button>
+      </form>
+      <div class="fb" id="fb"></div>
+      <button class="btn next" id="nextBtn">Дальше →</button>
+    </div>
+    <div class="foot">Подсказка: клавиши 1–4 выбирают вариант, Enter — дальше. На каждый вопрос есть время. Если уйти со страницы, вопрос заменится другим, а уход попадёт в итог теста.</div>
+    <details>
+      <summary>Прогресс по словам</summary>
+      <div class="grid" id="wordGrid"></div>
+    </details>
+  </section>
+
+  <!-- СЛОВАРНЫЙ ТЕСТ: итог -->
+  <section id="final" class="hidden">
+    <div class="card final">
+      <div class="big">🏆</div>
+      <h1>100% — все слова выучены!</h1>
+      <div class="kpis">
+        <div class="kpi"><b id="fTime">—</b><span>время</span></div>
+        <div class="kpi"><b id="fAns">—</b><span>всего ответов</span></div>
+        <div class="kpi"><b id="fFirst">—</b><span>верно с первого раза</span></div>
+      </div>
+      <div id="hardBlock">
+        <h3 style="text-align:left;margin-bottom:0">Слова, в которых были ошибки</h3>
+        <table><thead><tr><th>Английский</th><th>Перевод</th><th>Ошибок</th></tr></thead><tbody id="hardBody"></tbody></table>
+      </div>
+      <div class="row" style="justify-content:center;margin-top:20px">
+        <button class="btn" id="again">Пройти ещё раз</button>
+        <button class="btn ghost" id="redoHard">Повторить только трудные</button>
+        <button class="btn ghost" data-up>К папке</button>
+      </div>
+      <div class="guardlog" id="fGuard"></div>
+      <div class="histbox" id="fHist"></div>
+    </div>
+  </section>
+
+  <!-- ШПАРГАЛКА -->
+  <section id="cheat" class="hidden">
+    <div class="crumbs" data-crumbs></div>
+    <h1 id="cTitle"></h1>
+    <p class="sub" id="cSub"></p>
+    <div class="toc" id="cToc"></div>
+    <div id="cBody"></div>
+    <div class="cta"><button class="btn" id="cGoTest">Проверить себя — пройти тест →</button></div>
+  </section>
+
+  <!-- ТЕСТ: выбор -->
+  <section id="mstart" class="hidden">
+    <div class="crumbs" data-crumbs></div>
+    <h1 id="msTitle"></h1>
+    <p class="sub" id="msSub"></p>
+    <div class="card">
+      <div class="label" style="margin-top:0">Что проверяем</div>
+      <div class="row" id="msPar"></div>
+      <div class="label">Какие вопросы</div>
+      <div class="row" id="msKind"></div>
+      <div class="label">Правило «выучено»</div>
+      <p style="margin:0;color:var(--muted)">Вопрос засчитан, если ответил правильно. Если ошибся — вопрос вернётся через несколько других, и на него нужно ответить верно <b>2 раза подряд</b>. Тест закончится только на <b>100%</b>.</p>
+      <div style="margin-top:20px"><button class="btn" id="msGo">Начать</button></div>
+      <div class="histbox" id="msHist"></div>
+    </div>
+  </section>
+
+  <!-- МАТЕМАТИЧЕСКИЙ ТЕСТ -->
+  <section id="mquiz" class="hidden">
+    <button class="back" data-up>← Выйти из теста</button>
+    <div class="top"><span>Решено верно</span><span id="mPct">0%</span></div>
+    <div class="bar"><div id="mBar"></div></div>
+    <div class="stats">
+      <span>✅ <b id="mDone">0</b> из <b id="mTotal">0</b> заданий</span>
+      <span>Ошибок: <b id="mErr">0</b></span>
+      <span>Уходов со страницы: <b data-leaves>0</b></span>
+    </div>
+    <div class="card">
+      <span class="tag" id="mTopic"></span>
+      <div class="qtimer off" id="mTimer"><div class="qtb"><i></i></div><span></span></div>
+      <div class="mq" id="mQ"></div>
+      <div class="hint" id="mHint"></div>
+      <div class="answers" id="mAnswers"></div>
+      <form class="typebox hidden" id="mForm" autocomplete="off">
+        <input id="mInput" inputmode="decimal" placeholder="Ответ (число, можно дробь 3/4)">
+        <button class="btn" type="submit">Ответить</button>
+      </form>
+      <div class="fb" id="mFb"></div>
+      <button class="btn next" id="mNext">Дальше →</button>
+    </div>
+    <div class="foot">Если ошибся — вопрос вернётся позже. Тест закончится, когда на все вопросы будет дан верный ответ. На каждый вопрос есть время. Если уйти со страницы, вопрос заменится другим, а уход попадёт в итог теста.</div>
+  </section>
+
+  <section id="mfinal" class="hidden">
+    <div class="card final">
+      <div class="big">🏆</div>
+      <h1>Тест пройден на 100%!</h1>
+      <div class="kpis">
+        <div class="kpi"><b id="mfTime">—</b><span>время</span></div>
+        <div class="kpi"><b id="mfFirst">—</b><span>верно с первого раза</span></div>
+        <div class="kpi"><b id="mfErr">—</b><span>ошибок</span></div>
+      </div>
+      <div id="mHardBlock">
+        <h3 style="text-align:left;margin-bottom:0">Темы, которые стоит повторить</h3>
+        <table><thead><tr><th>Тема</th><th>Ошибок</th></tr></thead><tbody id="mHardBody"></tbody></table>
+      </div>
+      <div class="row" style="justify-content:center;margin-top:20px">
+        <button class="btn" id="mAgain">Пройти ещё раз</button>
+        <button class="btn ghost" id="mToCheat">Открыть шпаргалку</button>
+        <button class="btn ghost" data-up>К папке</button>
+      </div>
+      <div class="guardlog" id="mfGuard"></div>
+      <div class="histbox" id="mfHist"></div>
+    </div>
+  </section>
+</div>
+<div id="wmark"></div>
+<div id="guardOv"><div class="card">
+  <div class="big" style="font-size:44px">🙈</div>
+  <h2 id="goTitle">Ты ушёл со страницы теста</h2>
+  <p id="goText">Вопрос заменён другим. Уход записан в итог теста.</p>
+  <button class="btn" id="goBtn">Продолжить</button>
+</div></div>
+<script>
+/* =====================================================================
+   СТРУКТУРА ПАПОК. Чтобы добавить материал — добавь id в children нужной папки
+   и описание в ITEMS.
+   ===================================================================== */
+const TREE = {
+  id:"", title:"Тесты и шпаргалки", sub:"Выбери папку", children:[
+    {id:"sasha", emoji:"🧑", title:"Саша", children:[
+      {id:"sasha-english", emoji:"🇬🇧", title:"Английский", children:["phrasal"]},
+      {id:"sasha-informatics", emoji:"💻", title:"Информатика", children:["inf-logic-summary","inf-logic-explain","inf-logic-test"]},
+      {id:"sasha-biology", emoji:"🧬", title:"Биология", children:["bio-proto-notes","bio-proto-test"]}
+    ]},
+    {id:"polina", emoji:"👧", title:"Полина", children:[
+      {id:"polina-english", emoji:"🇬🇧", title:"Английский", children:["food"]},
+      {id:"polina-math", emoji:"📐", title:"Математика", children:["math6-cheat","math6-test"]},
+      {id:"polina-history", emoji:"🏰", title:"История", children:["hist10-12-notes","hist10-12-test","hist18-notes","hist18-test"]}
+    ]}
+  ]
+};
+</script>
+</body>
+</html>
