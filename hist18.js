@@ -12,7 +12,7 @@ const HIST18_DATES = [
 ];
 
 const HIST18_NOTES = [
- {t:"§1. Индия: природа и занятия жителей", h:`
+ {t:"§1. Индия: природа и занятия", h:`
   <p>На полуострове <b>Индостан</b> ещё в период Древнего мира сложилась <b>индо-буддийская цивилизация</b>.</p>
   <div class="rule">Основное занятие жителей — сельское хозяйство. Жаркий и влажный климат Южной Азии позволял снимать по два-три урожая в год.</div>
   <ul>
@@ -200,7 +200,7 @@ const SASHA_HIST_NOTES = [
   <p><b>Жак-Луи Давид</b> — крупнейший художник эпохи классицизма. Он прославился картинами на античные сюжеты, воспевавшими древних героев и идеалы свободы («<b>Смерть Сократа</b>», 1787). В годы Французской революции увековечил революционное событие в своей картине «<b>Клятва в зале для игры в мяч</b>», создал целую галерею портретов деятелей революции; затем был назван «первым художником» Наполеона I.</p>
   <div class="ex">«Смерть Сократа» (1787): Сократ в луче света сидит на ложе и продолжает говорить о душе, которая бессмертна. Левая рука поднята вверх, словно он желает в последний раз заявить о своей правоте. Правая рука тянется к чаше с ядом, но не касается её — философ, увлечённый разговором, забывает о судьбе, которая его ждёт. Вокруг — опечаленные и горюющие ученики, но сам он, кажется, побеждает смерть.</div>`},
  {t:"Литература: Даниэль Дефо и Джонатан Свифт", h:`
-  <div class="rule">В XVIII в. литература считалась призванной учить и воспитывать. Идеал эпохи — человек свободный, привыкший полагаться на себя, критически относящийся к миру и властвующим в нём. <b>Проза</b> приобретает большую популярность, нежели поэзия.</div>
+  <div class="rule">В XVIII в. литература считалась призванным учить и воспитывать. Идеал эпохи — человек свободный, привыкший полагаться на себя, критически относящийся к миру и властвующим в нём. <b>Проза</b> приобретает большую популярность, нежели поэзия.</div>
   <p>Два знаменитых английских романа XVIII в. создали <b>отнюдь не для детей</b>:</p>
   <ul>
    <li><b>Даниэль Дефо</b> — английский предприниматель, журналист и разведчик. Роман «<b>Жизнь и удивительные приключения Робинзона Крузо</b>» (1719) написал, когда ему было уже около 60 лет. Роман воспринимался как <b>протестантская гимна всемогуществу человека</b>. Робинзон попадает в кораблекрушение и оказывается один на необитаемом острове, но не предаётся унынию и не теряет веры в себя: забивает поля, учится ладить с новой проблемой; остров временами посещают люди туземцы. Книга Дефо стала фантастически популярной и породила множество подражаний.</li>
@@ -321,5 +321,86 @@ function sashaHistBuild(){ return SASHA_HIST_Q.map(q=>Object.assign({type:"c",ki
       filters:{par:[["all","Весь параграф"],["1","Искусство: архитектура и живопись"],["2","Литература"],["3","Музыка"],["4","Театр и Россия"]],
                kind:[["both","Все вопросы"],["q","Только вопросы"]]}}
   });
+  if(typeof route==="function") route();
+})();
+
+/* =====================================================================
+   РЕЗУЛЬТАТЫ ТЕСТОВ: файлы results/<ребёнок>.json в репозитории.
+   Пункт «Результаты тестов» появляется первым в папке каждого ребёнка.
+   После прохождения теста запись дописывается в файл через GitHub API;
+   страница пункта подгружает файл и показывает таблицу — её можно
+   открывать с любого устройства. Для записи нужен токен в
+   GH_RESULTS_TOKEN (пока пусто — запись выключена, чтение работает).
+   ===================================================================== */
+const GH_RESULTS_REPO="aashpikalov-tech/Uroki";
+const GH_RESULTS_TOKEN=""; /* ВСТАВИТЬ ТОКЕН СЮДА */
+const GH_RESULTS_DEFS=[
+  {id:"results-sasha", child:"sasha"},
+  {id:"results-polina", child:"polina"}
+];
+(function(){
+  TREE.children.forEach(node=>{
+    const def=GH_RESULTS_DEFS.find(d=>d.child===node.id);
+    if(!def || node.children.includes(def.id)) return;
+    node.children.unshift(def.id);
+    PARENT[def.id]=node.id;
+    ITEMS[def.id]={type:"cheat", kind:"📊 обновляется само", emoji:"📊", title:"Результаты тестов",
+      desc:"Как "+node.title+" проходил(а) тесты — сохраняется автоматически после каждого прохождения до конца",
+      intro:"Здесь появляются все тесты, пройденные до конца. Данные хранятся в файле results/"+node.id+".json в репозитории — страницу можно открывать с любого устройства.",
+      topics:[{t:"Все прохождения", h:'<div id="ghResults">Загружаю результаты…</div>'}]};
+  });
+  function ghChildFolder(){ const p=pathTo(current_id); return p.length?p[0]:null; }
+  function ghBtoa(s){ return btoa(unescape(encodeURIComponent(s))); }
+  function ghAtob(s){ return decodeURIComponent(escape(atob(s.replace(/\n/g,"")))); }
+  async function ghSaveResult(rec){
+    if(!GH_RESULTS_TOKEN) return;
+    const child=ghChildFolder(); if(!child) return;
+    const path="results/"+child.id+".json";
+    try{
+      let list=[], sha=null;
+      const r=await fetch("https://api.github.com/repos/"+GH_RESULTS_REPO+"/contents/"+path,
+        {headers:{Authorization:"Bearer "+GH_RESULTS_TOKEN,Accept:"application/vnd.github+json"}});
+      if(r.ok){ const j=await r.json(); sha=j.sha; try{ list=JSON.parse(ghAtob(j.content))||[]; }catch(e){ list=[]; } }
+      else if(r.status!==404) return;
+      list.push(rec); if(list.length>500) list=list.slice(-500);
+      await fetch("https://api.github.com/repos/"+GH_RESULTS_REPO+"/contents/"+path,{
+        method:"PUT",
+        headers:{Authorization:"Bearer "+GH_RESULTS_TOKEN,Accept:"application/vnd.github+json"},
+        body:JSON.stringify({ message:"Результат теста: "+rec.label+" — "+rec.first+"% ("+child.title+")",
+          content:ghBtoa(JSON.stringify(list,null,1)), ...(sha?{sha}:{}) })});
+    }catch(e){}
+  }
+  /* после каждого пройденного до конца теста — копия записи в файл на GitHub */
+  const _ghOrigHSave=hSave;
+  hSave=function(id,rec){ try{ ghSaveResult(rec); }catch(e){} return _ghOrigHSave(id,rec); };
+
+  /* отрисовка страницы результатов + скрытие кнопки «пройти тест» на ней */
+  let ghLastId="";
+  function ghTick(){
+    const id=decodeURIComponent(location.hash.replace("#",""));
+    const def=GH_RESULTS_DEFS.find(d=>d.id===id);
+    const cta=document.querySelector("#cheat .cta");
+    if(cta) cta.style.display=def?"none":"";
+    const box=document.getElementById("ghResults");
+    if(!def||!box){ ghLastId=""; return; }
+    if(ghLastId===id) return;
+    ghLastId=id;
+    box.innerHTML="Загружаю результаты…";
+    fetch("https://raw.githubusercontent.com/"+GH_RESULTS_REPO+"/main/results/"+def.child+".json?ts="+Date.now())
+      .then(r=>r.ok?r.json():Promise.reject(r.status))
+      .then(a=>{
+        a=a||[];
+        if(!a.length){ box.innerHTML="<p><b>Пока нет сохранённых результатов.</b></p><p class=\"hsum\">Когда тест будет пройден до конца, результат появится здесь автоматически.</p>"; return; }
+        const best=Math.max.apply(null,a.map(r=>r.first)), avg=Math.round(a.reduce((s,r)=>s+r.first,0)/a.length);
+        const rows=a.slice().reverse().slice(0,100).map((r,i)=>
+          "<tr><td>"+(a.length-i)+"</td><td>"+hFmtDate(r.ts)+"</td><td>"+r.label+"</td>"+
+          "<td class=\""+(r.first===best?"best":"")+"\">"+r.first+"%</td><td>"+r.err+"</td><td>"+hFmtTime(r.sec)+"</td>"+
+          "<td"+(r.leaves?" style=\"color:var(--bad);font-weight:800\"":"")+">"+(r.leaves==null?"—":r.leaves+" / "+r.tout)+"</td></tr>").join("");
+        box.innerHTML="<div class=\"card\"><p class=\"hsum\" style=\"margin:0\">Пройдено до конца: <b>"+plural(a.length,["раз","раза","раз"])+"</b> · лучший результат <b>"+best+"%</b> · средний <b>"+avg+"%</b></p></div>"+
+          "<div class=\"card\" style=\"margin-top:14px\"><div style=\"overflow-x:auto\"><table><thead><tr><th>№</th><th>Дата</th><th>Тест</th><th>С первого раза</th><th>Ошибок</th><th>Время</th><th>Уходы / ⏱</th></tr></thead><tbody>"+rows+"</tbody></table></div></div>";
+      })
+      .catch(()=>{ box.innerHTML="<p>Не удалось загрузить результаты. Попробуй обновить страницу.</p>"; });
+  }
+  setInterval(ghTick,800);
   if(typeof route==="function") route();
 })();
